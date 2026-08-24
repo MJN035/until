@@ -1,0 +1,31 @@
+{
+  "name": "until-mcp",
+  "version": "1.10.0",
+  "description": "MCP server for university eTL (Canvas/Moodle) — read-only assignment inbox, spec/requirements, materials, routing, readiness checks, submission-series, semester overview, and weekly briefs. No generation tools, no LLM calls. Requires a local Python 3.10+ (pure standard library — no pip install needed).",
+  "license": "AGPL-3.0-only",
+  "author": {
+    "name": "MJN035",
+    "email": "minjun05@snu.ac.kr"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MJN035/until"
+  },
+  "homepage": "https://github.com/MJN035/until",
+  "keywords": ["mcp", "education", "canvas", "moodle", "lms", "assignments", "etl"],
+  "bin": {
+    "until": "bin/until.js",
+    "until-mcp": "bin/until.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "python"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "prepack": "node scripts/bundle-python.js"
+  }
+}

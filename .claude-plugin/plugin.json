@@ -1,0 +1,22 @@
+{
+  "name": "until",
+  "version": "1.10.0",
+  "description": "Read-only MCP tools for university eTL (Canvas/Moodle): assignment inbox, spec/requirements, materials, routing, readiness checks, submission-series cross-reference, semester overview, and weekly briefs. No generation tools, no LLM calls, zero third-party Python dependencies.",
+  "author": {
+    "name": "MJN035",
+    "email": "minjun05@snu.ac.kr"
+  },
+  "repository": "https://github.com/MJN035/until",
+  "homepage": "https://github.com/MJN035/until",
+  "license": "AGPL-3.0-only",
+  "keywords": [
+    "mcp",
+    "education",
+    "canvas",
+    "moodle",
+    "lms",
+    "assignments",
+    "eTL"
+  ],
+  "mcpServers": "./.mcp.json"
+}

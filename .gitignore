@@ -24,6 +24,8 @@ until/optimize/optimized_program.json
 Thumbs.db
 
 node_modules/
+# npm 패키징 빌드 산출물 — prepack이 until/를 여기로 복사한다(소스 아님, 재생성됨).
+packaging/npm/python/
 .wrangler/
 _cowork_test
 .superpowers/

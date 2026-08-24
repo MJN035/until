@@ -1,0 +1,20 @@
+{
+  "name": "until",
+  "description": "Marketplace for the until MCP server — read-only eTL(Canvas/Moodle) assignment inbox, spec, materials, routing, readiness, and submission-series tools.",
+  "owner": {
+    "name": "MJN035",
+    "email": "minjun05@snu.ac.kr"
+  },
+  "plugins": [
+    {
+      "name": "until",
+      "description": "until — read-only MCP tools for university eTL (Canvas/Moodle): assignment inbox, spec/requirements, materials, routing, readiness checks, and submission-series cross-reference. No generation tools, no LLM calls, zero third-party dependencies.",
+      "version": "1.10.0",
+      "source": "./",
+      "author": {
+        "name": "MJN035",
+        "email": "minjun05@snu.ac.kr"
+      }
+    }
+  ]
+}
