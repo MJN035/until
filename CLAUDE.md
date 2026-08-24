@@ -24,7 +24,7 @@
    `UNTIL_AUTOFILL_DECISIONS=0`). Execution이 확정하는 게 아니라 **사람이 위임한**
    것이므로 규칙 위반이 아니다. 대신 채운 사실과 내용을 화면에 반드시 밝힌다 —
    이 표시를 지우면 학생이 자기가 정한 줄 알고 제출한다. 되돌리지 마라.
-2. `--backend mock` + 모든 테스트(89스위트)는 키·인터넷 없이 항상 통과해야 한다.
+2. `--backend mock` + 모든 테스트(90스위트)는 키·인터넷 없이 항상 통과해야 한다.
 3. `capture/`,`context/`,`boundary/`,`prompts/suggest.py`는 LLM 호출 0 (결정적).
 4. LLM은 `llm/base.py`의 `LLMClient.complete()` 하나로만.
 5. 용어: 파싱단계="Capture", 서울대 LMS="eTL"(현재 Moodle WS 기반, 레거시 Canvas 어댑터 보존).

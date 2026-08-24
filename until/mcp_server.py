@@ -701,6 +701,10 @@ def main(argv=None) -> int:
     from .config import load_dotenv
     load_dotenv()
     argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] == "setup":     # Claude Code·Codex 설정에 등록만(토큰 없음)
+        from .setup import run as setup_run
+        setup_run()
+        return 0
     if "--list-tools" in argv:          # 사람이 붙이기 전에 확인하는 용도
         print(json.dumps(tool_definitions(), ensure_ascii=False, indent=1))
         return 0

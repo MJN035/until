@@ -52,6 +52,7 @@ SUITES = [
     "test_token_onboarding", "test_submit_ready",
     "test_practice_audit",
     "test_mcp_server",
+    "test_setup",
     "test_academic_os",
     "test_policy_hierarchy", "test_weekly_brief",
     "test_runtime_kernel", "test_runtime_phase2", "test_runtime_phase2_edge",
