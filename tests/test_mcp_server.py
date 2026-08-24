@@ -14,6 +14,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import subprocess
 import sys
 import pathlib
 
@@ -212,6 +213,90 @@ def test_route_tool_is_deterministic():
     print("OK until_route는 같은 입력에 같은 출력")
 
 
+# ── LLM·웹 서버 차단(TASK-019) ──────────────────────────────────────────
+_BANNED_MODULES = ("until.llm", "until.pipeline", "until.web", "until.asgi", "until.billing")
+
+
+def test_importing_mcp_server_never_pulls_in_llm_pipeline_web():
+    """"MCP는 LLM을 호출하지 않는다"를 주석이 아니라 강제한다.
+
+    반드시 별도 프로세스에서 검사한다 — 같은 프로세스면 이 파일의 다른 테스트가
+    이미 until_materials·until_series 등을 호출해서 until.llm을 sys.modules에
+    올려 뒀을 것이므로(그 도구들은 토큰이 있어야 도는 도구라 llm.base의 타입만
+    쓰고도 로딩된다), 그 오염 위에서 검사하면 이 테스트는 아무것도 잡지 못한다.
+
+    **bare import만으로는 부족하다.** mcp_server.py의 모든 무거운 import는 도구
+    함수 안(지연 import)에 있어서, `import until.mcp_server`만 해서는 아무것도
+    안 실린다 — 그건 이미 지금도 참이었고, 회귀가 나도 이 상태로는 안 잡힌다.
+    실제 회귀는 "도구를 호출했을 때" 딸려 들어온다(예: `tool_readiness`가
+    `from .pipeline import Result`를 쓰면 그 순간 `until.llm`까지 로딩된다).
+    그래서 토큰 없이 도는 두 도구(`until_route`·`until_readiness`)를 실제로
+    한 번씩 호출한 뒤에 모듈 그래프를 본다.
+    """
+    code = (
+        "import until.mcp_server as mcp, sys\n"
+        "mcp.tool_route({'title': '기말 보고서'})\n"
+        "mcp.tool_readiness({'draft': '본문 [[DECISION: x]]'})\n"
+        "print('\\n'.join(sorted(sys.modules)))\n"
+    )
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    proc = subprocess.run([sys.executable, "-c", code], capture_output=True,
+                          text=True, cwd=str(repo_root))
+    assert proc.returncode == 0, (
+        f"until_route·until_readiness 호출만으로 프로세스가 죽었다:\n{proc.stderr}")
+    loaded = set(proc.stdout.split())
+    leaked = [m for m in _BANNED_MODULES if m in loaded]
+    assert not leaked, (
+        f"until_route·until_readiness를 호출하는 것만으로 금지된 모듈이 딸려왔다: {leaked}. "
+        "mcp_server.py나 그 도구가 (지연 import라도) import하는 모듈 체인 어딘가가 "
+        f"{leaked[0]}를 로딩한다는 뜻이다 — 무거운 타입을 가벼운 모듈로 옮겨서 재수출해라 "
+        "(예: `until.types.Result`가 `until.pipeline.Result`를 대신하는 방식).")
+    print("OK until_route·until_readiness 호출만으로는 LLM·파이프라인·웹 서버 모듈이 안 실린다")
+
+
+def test_offline_tools_ignore_llm_env_vars():
+    """until_route·until_readiness는 토큰이 필요 없는 두 도구다.
+
+    UNTIL_API_KEY·UNTIL_BASE_URL·UNTIL_MODEL에 쓰레기 값을 넣어도 결과가
+    바뀌면 안 된다 — 바뀐다면 그 값을 실제로 읽고 있다는(= llm.base.build_client
+    경로를 탄다는) 증거다. 결과 불변이 "안 읽는다"는 증거다.
+    """
+    route_args = {"title": "기말 보고서", "description": "800자 이상, 자료를 인용해 작성하세요.",
+                  "course_name": "통계학실험"}
+    readiness_args = {
+        "draft": "# 서론\n" + "기후 변화는 소비 구조를 바꾼다. " * 20 + "[자료1]\n",
+        "assignment_text": "800자 이상 작성하고 자료를 인용하세요.",
+        "title": "기말 보고서",
+    }
+    with _NoToken():
+        baseline_route = _payload(_call("until_route", route_args))
+        baseline_ready = _payload(_call("until_readiness", readiness_args))
+
+    poison = {"UNTIL_API_KEY": "not-a-real-key",
+              "UNTIL_BASE_URL": "http://poisoned.invalid",
+              "UNTIL_MODEL": "definitely-not-a-real-model"}
+    saved = {k: os.environ.get(k) for k in poison}
+    os.environ.update(poison)
+    try:
+        with _NoToken():
+            poisoned_route = _payload(_call("until_route", route_args))
+            poisoned_ready = _payload(_call("until_readiness", readiness_args))
+    finally:
+        for k, v in saved.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+    assert poisoned_route == baseline_route, (
+        "until_route 결과가 UNTIL_API_KEY/BASE_URL/MODEL 값에 따라 바뀌었다 — "
+        "이 도구가 그 환경변수를 읽고 있다는 뜻이다.")
+    assert poisoned_ready == baseline_ready, (
+        "until_readiness 결과가 UNTIL_API_KEY/BASE_URL/MODEL 값에 따라 바뀌었다 — "
+        "이 도구가 그 환경변수를 읽고 있다는 뜻이다.")
+    print("OK until_route·until_readiness는 UNTIL_API_KEY/BASE_URL/MODEL을 읽지 않는다")
+
+
 if __name__ == "__main__":
     test_initialize_negotiates_and_lists_tools()
     test_unknown_protocol_version_falls_back_to_ours()
@@ -223,4 +308,6 @@ if __name__ == "__main__":
     test_token_never_appears_in_tool_output()
     test_unknown_tool_is_an_error_result_not_an_exception()
     test_route_tool_is_deterministic()
+    test_importing_mcp_server_never_pulls_in_llm_pipeline_web()
+    test_offline_tools_ignore_llm_env_vars()
     print("\nMCP SERVER TESTS PASS")

@@ -8,7 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List
 
-from .pipeline import Result
+from .types import Result  # NOT .pipeline — avoids pulling in llm.base for type-hint-only use
 
 
 @dataclass

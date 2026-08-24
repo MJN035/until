@@ -280,7 +280,7 @@ def tool_readiness(args: dict) -> dict:
     from .boundary.models import Draft
     from .context.assignment_router import route_documents
     from .execution.boundary_guard import GuardReport
-    from .pipeline import Result
+    from .types import Result  # NOT .pipeline — pipeline.py pulls in llm.base
     from .readiness import assess_readiness
     from .runtime.spec_builder import build_runtime_spec
     from .understanding.deadline import detect_deadline
