@@ -19,6 +19,9 @@
       until_route      → `context.assignment_router`
       until_readiness  → `readiness`
       until_series     → `context.series`
+      until_control_tower → `practice_audit`
+      until_semester   → `inbox_policy`
+      until_brief      → `context.{etl_announcements,weekly_brief}`
 
 전송은 MCP stdio 규약 그대로 **줄바꿈으로 구분된 JSON-RPC**다(Content-Length 헤더가
 아니다). 표준 라이브러리만으로 충분해서 `mcp` SDK를 넣지 않았다 — `pyproject.toml`의
@@ -352,6 +355,127 @@ def tool_series(args: dict) -> dict:
     }
 
 
+def tool_control_tower(args: dict) -> dict:
+    """과제 1건의 제출 가능 상태 — 필수 첨부·AI 사용 규정·분량 신호를 findings로.
+
+    `control_tower.inspect_assignment`가 아니라 `practice_audit.audit_assignment`를
+    쓴다 — inspect_assignment는 `AssignmentPolicy`(policy_compiler로 강의계획서를
+    컴파일한 결과)·`AcademicGraph`(과목 전체 이력 그래프)·`student_memory` 세 가지를
+    미리 만들어 받아야 하는데, 이 셋을 만드는 코드는 제품 전체에서 **어디에도 없다**
+    (테스트에서만 손으로 만들어 넣는다) — 재사용이 아니라 새 파이프라인을 짜는
+    일이 된다. `audit_assignment`는 반대로 `web.py`가 이미 실제로 쓰는 검증된
+    경로라 그대로 재사용했다. eTL 토큰 필요.
+    """
+    from .practice_audit import audit_assignment
+
+    url = str(args.get("url") or "").strip()
+    if not url:
+        raise ToolError("url(eTL 과제 페이지 주소)이 필요합니다.")
+
+    with tempfile.TemporaryDirectory(prefix="until_mcp_") as tmp:
+        _, got, docs, _ = _collect(url, tmp, materials=0)
+        body = str(getattr(docs[0], "text", "") or "") if docs else ""
+        audit = audit_assignment(body, attachment_count=len(got.files))
+        findings = ([{"severity": "block", "message": m} for m in audit.blockers]
+                   + [{"severity": "warn", "message": m} for m in audit.warnings])
+        return {
+            "assignment_id": got.assignment_id,
+            "submit_state": "blocked" if audit.blockers else "review",
+            "policy": audit.policy,
+            "body_present": audit.body_present,
+            "deadline_present": audit.deadline_present,
+            "formats": list(audit.formats),
+            "attachment_count": audit.attachment_count,
+            "findings": findings,
+        }
+
+
+def tool_semester(args: dict) -> dict:
+    """학기 전체 상태 한 응답 — 과목별 과제 수·임박 건수·성적부 열 수·다음 마감.
+
+    `until_inbox`가 쓰는 것과 같은 판정기(`inbox_policy`)로 과목별 집계만 새로
+    만든다 — 새 판정 로직 없음. eTL 토큰 필요.
+    """
+    from .inbox_policy import dday_label, is_past_due, item_kind
+    from .runtime.etl_input import EtlInputError, list_assignments
+
+    adapter = _adapter()
+    try:
+        items = list_assignments(adapter, base_url=_base_url(adapter))
+    except EtlInputError as exc:
+        raise ToolError(str(exc)) from exc
+
+    by_course: dict = {}
+    for item in items:
+        cid = str(getattr(item, "course_id", ""))
+        rec = by_course.setdefault(cid, {
+            "course_id": cid, "course_name": getattr(item, "course_name", "") or cid,
+            "assignment_count": 0, "gradebook_count": 0,
+            "urgent_count": 0, "next_due": "",
+        })
+        if item_kind(item) == "gradebook":
+            rec["gradebook_count"] += 1
+            continue
+        rec["assignment_count"] += 1
+        if getattr(item, "submitted", False) or is_past_due(getattr(item, "due_at", None)):
+            continue
+        _, urgent = dday_label(getattr(item, "due_at", ""))
+        if urgent:
+            rec["urgent_count"] += 1
+        due = getattr(item, "due_at", "") or ""
+        if due and (not rec["next_due"] or due < rec["next_due"]):
+            rec["next_due"] = due
+    courses = sorted(by_course.values(),
+                     key=lambda c: (c["next_due"] or "9999", c["course_name"]))
+    return {
+        "course_count": len(courses),
+        "total_assignments": sum(c["assignment_count"] for c in courses),
+        "total_gradebook_rows": sum(c["gradebook_count"] for c in courses),
+        "total_urgent": sum(c["urgent_count"] for c in courses),
+        "courses": courses,
+    }
+
+
+def tool_brief(args: dict) -> dict:
+    """과목 주차 브리프 — 그 과제와 같은 주차 공지의 제목·첨부 목록(결정적 매칭).
+
+    주차 매칭은 `context.weekly_brief`(제목의 'N주차' 패턴만 결정적으로 본다).
+    eTL 토큰 필요(공지 조회 지원 어댑터에서만).
+    """
+    from .capture.sources.models import CourseRef
+    from .context.etl_announcements import collect_related_announcements
+    from .context.weekly_brief import readable_attachments, week_announcements, week_of
+
+    url = str(args.get("url") or "").strip()
+    if not url:
+        raise ToolError("url(eTL 과제 페이지 주소)이 필요합니다.")
+
+    with tempfile.TemporaryDirectory(prefix="until_mcp_") as tmp:
+        adapter, got, docs, _ = _collect(url, tmp, materials=0)
+        week = week_of(got.title or "")
+        if week is None:
+            return {"week": None, "course_id": got.course_id, "count": 0, "items": [],
+                    "message": "과제 제목에서 주차를 못 찾았습니다(예: 'N주차 소감문')."}
+        if not got.course_id or not hasattr(adapter, "collect_announcements"):
+            raise ToolError("이 eTL 어댑터는 공지 조회를 지원하지 않습니다.")
+        body = str(getattr(docs[0], "text", "") or "") if docs else ""
+        spec_like = {"deliverable": "과제", "goal": got.title, "requirements": [body[:800]]}
+        course = CourseRef(id=got.course_id, name=got.course_name or "")
+        anns = collect_related_announcements(adapter, course, spec_like, k=5)
+        weekly = week_announcements(anns, week)
+        items = [
+            {"subject": getattr(a, "subject", "") or "",
+             "created_iso": getattr(a, "created_iso", "") or "",
+             "url": getattr(a, "url", "") or "",
+             "excerpt": _excerpt(getattr(a, "body", "") or ""),
+             "attachments": [str(getattr(x, "name", "") or "")
+                            for x in readable_attachments(a)]}
+            for a in weekly
+        ]
+        return {"week": week, "course_id": got.course_id, "count": len(items),
+                "items": items}
+
+
 def _route_dict(route) -> dict:
     if route is None:
         return {}
@@ -445,6 +569,30 @@ TOOLS: tuple[tuple[str, str, dict, Callable[[dict], dict]], ...] = (
             "k": {**_INT, "description": "최대 건수(1~5, 기본 2)"},
         }, ("title", "course_id")),
         tool_series,
+    ),
+    (
+        "until_control_tower",
+        "과제 1건의 제출 가능 상태 — 필수 첨부·AI 사용 규정 판정·분량/마감 신호를 "
+        "severity(block/warn)별 findings로 돌려준다. 판정만 하고 제출하지 않는다. "
+        "eTL 토큰 필요.",
+        _schema({"url": {**_STR, "description": "eTL 과제 페이지 주소"}}, ("url",)),
+        tool_control_tower,
+    ),
+    (
+        "until_semester",
+        "학기 전체 상태를 한 응답으로 — 과목별 과제 수·성적부 열 수·마감 임박 건수·"
+        "다음 마감을 집계한다. `until_inbox`와 같은 판정기를 과목 단위로 묶는다. "
+        "eTL 토큰 필요.",
+        _schema({}),
+        tool_semester,
+    ),
+    (
+        "until_brief",
+        "그 과제와 같은 주차('N주차') 공지의 제목·발췌·첨부 목록을 결정적으로 "
+        "매칭해 돌려준다. 주차마다 연사·주제가 바뀌는 과목에서 '이번 주 뭘 다뤘는지'가 "
+        "여기에만 있는 경우가 많다. eTL 토큰 필요(공지 조회 지원 어댑터에서만).",
+        _schema({"url": {**_STR, "description": "eTL 과제 페이지 주소"}}, ("url",)),
+        tool_brief,
     ),
 )
 

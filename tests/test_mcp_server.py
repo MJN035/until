@@ -79,7 +79,8 @@ def test_initialize_negotiates_and_lists_tools():
     assert init["serverInfo"]["name"] == "until"
     names = [t["name"] for t in out[1]["result"]["tools"]]
     assert names == ["until_inbox", "until_assignment", "until_materials",
-                     "until_route", "until_readiness", "until_series"], names
+                     "until_route", "until_readiness", "until_series",
+                     "until_control_tower", "until_semester", "until_brief"], names
     for tool in out[1]["result"]["tools"]:
         schema = tool["inputSchema"]
         assert schema["type"] == "object" and isinstance(schema["properties"], dict)
@@ -152,7 +153,10 @@ def test_missing_token_is_a_friendly_error_not_a_crash():
         for name, args in (("until_inbox", {}),
                            ("until_assignment", {"url": "https://e.edu/a/1"}),
                            ("until_materials", {"url": "https://e.edu/a/1"}),
-                           ("until_series", {"title": "T", "course_id": "1"})):
+                           ("until_series", {"title": "T", "course_id": "1"}),
+                           ("until_control_tower", {"url": "https://e.edu/a/1"}),
+                           ("until_semester", {}),
+                           ("until_brief", {"url": "https://e.edu/a/1"})):
             result = _call(name, args)
             assert result["isError"] is True, name
             text = result["content"][0]["text"]
@@ -166,7 +170,9 @@ def test_required_arguments_are_checked_before_the_network():
                                  ("until_readiness", {"draft": "  "}, "draft"),
                                  ("until_assignment", {}, "url"),
                                  ("until_materials", {}, "url"),
-                                 ("until_series", {"title": "T"}, "course_id")):
+                                 ("until_series", {"title": "T"}, "course_id"),
+                                 ("until_control_tower", {}, "url"),
+                                 ("until_brief", {}, "url")):
             result = _call(name, args)
             assert result["isError"] is True, name
             assert word in result["content"][0]["text"], (name, word)
@@ -179,7 +185,10 @@ def test_token_never_appears_in_tool_output():
         for name, args in (("until_route", {"title": "보고서"}),
                            ("until_readiness", {"draft": "본문 [[DECISION: x]]"}),
                            ("until_inbox", {}),
-                           ("until_series", {"title": "T", "course_id": "1"})):
+                           ("until_series", {"title": "T", "course_id": "1"}),
+                           ("until_semester", {}),
+                           ("until_control_tower", {"url": "https://e.edu/a/1"}),
+                           ("until_brief", {"url": "https://e.edu/a/1"})):
             result = _call(name, args)
             assert "SECRET-TOKEN-DO-NOT-LEAK" not in json.dumps(
                 result, ensure_ascii=False), name
