@@ -1,0 +1,18 @@
+# 셸 스크립트는 **항상 LF**로 체크아웃한다.
+#
+# 이 레포는 Windows에서 개발하고 `core.autocrlf=true`가 걸려 있다. 그대로 두면
+# 새로 클론할 때 `.sh` 파일이 CRLF로 풀리고, WSL·리눅스에서 실행하면
+# `/bin/sh^M: bad interpreter`로 죽는다. `tools/until-sandbox.sh`는 WSL 안에서
+# 실행되는 것이 존재 이유라 이 설정이 없으면 기능 자체가 사라진다.
+*.sh text eol=lf
+
+# Dockerfile도 LF — CRLF면 RUN 줄 끝에 캐리지리턴이 붙어 셸이 오작동한다.
+Dockerfile* text eol=lf
+
+# VM에서 도는 배포 파일도 **항상 LF**. `.sh`와 같은 계보의 사고를 막는다.
+# systemd 유닛이 CRLF면 유닛 파싱이 깨지고, `.env`가 CRLF면 값 끝에 `\r`가 붙어
+# 도메인·키가 조용히 틀린 값이 된다(HMAC이 안 맞아 전부 400이 되는 식).
+deploy/runner-vm/Caddyfile      text eol=lf
+deploy/runner-vm/*.yml          text eol=lf
+deploy/runner-vm/*.service      text eol=lf
+deploy/runner-vm/.env.example   text eol=lf

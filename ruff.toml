@@ -1,0 +1,23 @@
+# Ruff — 실버그 탐지 전용(스타일 규칙 없음). 실행: ruff check .
+# 이 리포는 표준 라이브러리 위주·문자열 HTML이 많아 스타일 린트는 소음 —
+# 논리 오류를 잡는 규칙만 켠다.
+target-version = "py313"
+line-length = 120
+
+[lint]
+select = [
+    "F",      # pyflakes — 미정의 이름, 미사용 import/변수, 중복 인자 등
+    "E9",     # 문법·들여쓰기 오류
+    "B",      # bugbear — 가변 기본값, 루프 클로저, 무의미 비교 등
+    "PLE",    # pylint 오류급
+    "RUF100", # 불필요한 noqa
+]
+ignore = [
+    "E902",
+    "B008",   # 함수 호출 기본값 — 이 리포에서 의도적 사용 없음이지만 오탐 방지
+    "F841",   # 미사용 지역변수 — 테스트에서 의도적 언패킹 다수(소음)
+]
+
+[lint.per-file-ignores]
+# 테스트는 sys.path 조작 뒤 import — E402류 아님(F401만 의미)
+"tests/*" = ["B011"]

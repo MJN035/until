@@ -1,0 +1,14 @@
+// Until 랜딩(정적, 무료 티어) — 이 폴더에서 `npx wrangler deploy`
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "until-landing",
+  "compatibility_date": "2026-07-01",
+  "main": "src/index.js",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "triggers": {
+    "crons": ["*/10 * * * *"]
+  }
+}

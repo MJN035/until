@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>until | 과제를 제출 직전까지</title>
+<meta name="description" content="과제와 자료를 읽고, 직접 정할 판단만 남겨, 완성본과 제출 파일을 확인하는 곳까지 이어줍니다.">
+<style>
+:root{
+  /* 팔레트만 앱 홈 톤으로 — 크림 지면·니어블랙·노란 하이라이트(레이아웃 불변). */
+  --bg:#faf9f5; --ink:#191813; --head:#191813; --muted:#75705f;
+  --line:#e4e1d6; --hair:#d6d2c4;
+  --accent:#191813; --accent-dark:#000000;
+  --sage:#f6efce; --sage-2:#efe4b0; --mist:#f1efe7; --sand:#f1efe7;
+  --hl:#ffe95c;
+  --sans:'Pretendard Variable',Pretendard,-apple-system,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --serif:'Noto Serif KR',Georgia,'Apple SD Gothic Neo',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);
+  line-height:1.65;-webkit-font-smoothing:antialiased;word-break:keep-all}
+.wrap{max-width:75rem;margin:0 auto;padding:0 2rem}
+a{color:var(--accent)}
+h1,h2,h3{line-height:1.25;letter-spacing:-.02em;color:var(--head)}
+.eyebrow{font-size:.92rem;font-weight:500;color:var(--muted);margin-bottom:.8rem}
+.meta{font-size:.88rem;color:var(--muted)}
+
+/* 버튼 — 채움 / 아웃라인 필(화살표 원형) */
+.btn{display:inline-flex;align-items:center;gap:.5rem;background:var(--accent);
+  color:#fff;text-decoration:none;padding:.8rem 1.5rem;border-radius:.6rem;
+  font-weight:700;font-size:.98rem}
+.btn:hover{background:var(--accent-dark)}
+.btn.pill{background:transparent;color:var(--accent);border:1.5px solid var(--accent);
+  border-radius:999px;font-weight:600;padding:.7rem 1.35rem}
+.btn.pill:hover{background:var(--sage)}
+.btn .arr{display:inline-flex;width:1.1rem;height:1.1rem;border-radius:50%;
+  align-items:center;justify-content:center;font-weight:700}
+.btn.pill .arr{color:var(--accent)}
+.btn.sm{padding:.55rem 1.2rem;font-size:.92rem;border-radius:.55rem}
+
+/* ── 내비 ── */
+nav.top{position:sticky;top:0;z-index:30;background:var(--bg);
+  border-bottom:1px solid var(--line)}
+nav.top .in{max-width:75rem;margin:0 auto;padding:.9rem 2rem;
+  display:flex;align-items:center;gap:2rem}
+nav.top .logo{font-weight:800;font-size:1.3rem;color:var(--head);
+  text-decoration:none;letter-spacing:-.02em}
+nav.top .logo b{color:var(--accent)}
+nav.top .menu{display:flex;gap:1.6rem;flex:1;font-size:.94rem}
+nav.top .menu a{color:var(--ink);text-decoration:none;font-weight:500}
+nav.top .menu a:hover{color:var(--accent)}
+@media (max-width:48rem){nav.top .menu{display:none}}
+
+/* ── 히어로 — 신뢰 라벨 + 투톤 두 줄 + CTA·마이크로카피 ── */
+header.hero{padding:6.5rem 0 5.5rem;text-align:center}
+.hero .tag{font-size:.76rem;letter-spacing:.18em;color:var(--muted);
+  font-weight:600;margin-bottom:1.4rem;text-transform:uppercase}
+.hero .tag b{color:var(--head)}
+.hero h1{font-size:clamp(2.4rem,6.5vw,4.1rem);font-weight:800;margin-bottom:1.3rem}
+/* 형광펜이 글자 폭에만 걸리도록 width:fit-content를 쓰는데, 그 순간 이 em은
+   자기 폭을 가진 블록이 되어 부모의 text-align:center가 더는 닿지 않는다
+   (둘째 줄만 왼쪽에 붙어 있던 원인). 가운데 정렬은 auto 여백이 맡는다. */
+.hero h1 em{font-style:normal;color:var(--ink);display:block;
+  width:fit-content;margin-inline:auto;
+  background:linear-gradient(transparent 60%,var(--hl) 60%)}
+.hero p.sub{font-size:1.13rem;color:var(--muted)}
+.hero .ctarow{display:flex;gap:1.1rem;align-items:center;justify-content:center;
+  margin-top:2.3rem;flex-wrap:wrap}
+.hero .micro{font-size:.9rem;color:var(--muted)}
+.hero .proof{margin-top:1.7rem;font-size:.92rem;color:var(--muted)}
+.hero .proof b{color:var(--ink)}
+.hero .chev{margin-top:2.4rem;color:var(--muted);font-size:1.3rem}
+
+/* 실제 앱과 같은 다섯 단계 — 소개와 작동 예시의 순서를 한 원본처럼 맞춘다. */
+.how{max-width:75rem;margin:0 auto;padding:1rem 2rem 5rem}
+.how .head{display:flex;justify-content:space-between;align-items:end;gap:2rem;
+  padding-bottom:1rem;border-bottom:1px solid var(--ink)}
+.how h2{font-size:clamp(1.55rem,3vw,2.1rem)}
+.how .head p{max-width:28rem;color:var(--muted);font-size:.9rem}
+.how ol{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));list-style:none}
+.how li{padding:1.2rem 1rem 1.4rem;border-right:1px solid var(--line)}
+.how li:first-child{padding-left:0}.how li:last-child{border-right:0;padding-right:0}
+.how li span{display:block;margin-bottom:.55rem;font:600 .68rem/1.4 ui-monospace,monospace;
+  color:var(--muted);letter-spacing:.08em}
+.how li b{display:block;font-size:.95rem;line-height:1.45}
+.how li p{margin-top:.35rem;color:var(--muted);font-size:.78rem;line-height:1.6}
+@media(max-width:60rem){.how ol{grid-template-columns:1fr}.how li,.how li:first-child,.how li:last-child{
+  padding:.85rem 0;border-right:0;border-bottom:1px solid var(--line)}.how .head{align-items:start;flex-direction:column}}
+
+/* 번호 아이브로우(01 · …) */
+.eyebrow.num{color:var(--accent);font-weight:700;letter-spacing:.14em;
+  font-size:.78rem;text-transform:uppercase}
+
+/* 브라우저 크롬(점 3개 + 모노 브레드크럼) — 스크린샷을 '창'에 담는다 */
+.chrome{display:flex;align-items:center;gap:.45rem;background:#f1efe7;
+  border-bottom:1px solid var(--line);padding:.55rem .95rem;
+  font-family:ui-monospace,'SF Mono',Consolas,monospace;font-size:.72rem;
+  color:var(--muted);letter-spacing:.05em}
+.chrome i{width:.52rem;height:.52rem;border-radius:50%;background:#d6d2c4;
+  display:inline-block}
+.chrome span{margin-left:.5rem}
+
+/* ── 일 기준 3분할 카드(헤어라인 구분) ── */
+.prods{border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+.prods .in{max-width:86rem;margin:0 auto;display:grid;
+  grid-template-columns:repeat(3,1fr)}
+.prod{padding:3.2rem 2.6rem 3rem;position:relative;overflow:hidden;min-height:15rem}
+.prod+.prod{border-left:1px solid var(--hair)}
+.prod .name{font-size:1.5rem;font-weight:800;color:var(--head);
+  letter-spacing:-.02em;margin:.2rem 0 1.6rem;line-height:1.35}
+.prod .vis{position:absolute;right:-3rem;top:2.4rem;width:16rem;opacity:.5;
+  filter:grayscale(1) contrast(.96) opacity(.9);
+  pointer-events:none}
+.prod .vis img{width:100%;border-radius:.5rem}
+@media (max-width:60rem){.prods .in{grid-template-columns:1fr}
+  .prod+.prod{border-left:0;border-top:1px solid var(--hair)}}
+
+/* ── 신뢰 스트립(그레이 워드마크 톤) ── */
+.trust{padding:3.4rem 0 3.8rem;text-align:center}
+.trust .cap{font-size:.9rem;color:var(--muted);margin-bottom:1.6rem}
+.trust .row{display:flex;gap:2.6rem;justify-content:center;flex-wrap:wrap}
+.trust .row span{color:#a19c8d;font-weight:700;font-size:1.05rem;
+  letter-spacing:.01em;white-space:nowrap}
+
+/* ── 큰 질문 + 세그먼트 탭 ── */
+.ask{padding:6.5rem 0 5.5rem;text-align:center}
+.ask h2{font-size:clamp(1.9rem,4.6vw,3rem);font-weight:800;max-width:52rem;
+  margin:0 auto 2.4rem}
+.seg{display:inline-flex;border:1px solid var(--hair);border-radius:999px;
+  padding:.3rem;gap:.2rem;background:var(--bg)}
+.seg a{padding:.55rem 1.5rem;border-radius:999px;text-decoration:none;
+  color:var(--ink);font-weight:600;font-size:.98rem}
+.seg a.on,.seg a:hover{background:var(--head);color:#fff}
+
+/* ── 일 상세: 좌 레일 + 우 틴트 패널(플로팅 스크린샷) ── */
+.detail{padding:5.5rem 0}
+.detail.tint-sage{background:linear-gradient(180deg,var(--sage) 0%,#f4f2ec 100%)}
+.detail.tint-mist{background:linear-gradient(180deg,var(--mist) 0%,#f4f2ec 100%)}
+.detail.tint-sand{background:linear-gradient(180deg,var(--sand) 0%,#f4f1e9 100%)}
+.detail .in{max-width:80rem;margin:0 auto;padding:0 2rem;display:grid;
+  grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:3.6rem;align-items:start}
+.detail .rail{position:sticky;top:5.5rem}
+.detail .name{font-size:clamp(1.7rem,3.4vw,2.4rem);font-weight:800;color:var(--head);
+  margin:.2rem 0 1rem;letter-spacing:-.02em;line-height:1.3}
+.detail .hook{font-size:1.08rem;color:var(--ink);margin-bottom:.4rem}
+.detail .ctas{display:flex;gap:.7rem;flex-wrap:wrap}
+@media (max-width:60rem){.detail .in{grid-template-columns:1fr}
+  .detail .rail{position:static}}
+
+/* 기능 3줄 — ✓ 리스트(사용자가 주어, 해요체) */
+.checks{list-style:none;margin:1.2rem 0 1.8rem}
+.checks li{position:relative;padding-left:1.55rem;margin:.6rem 0;
+  font-size:.97rem;color:var(--ink)}
+.checks li::before{content:"✓";position:absolute;left:0;top:0;
+  color:var(--accent);font-weight:800}
+
+/* 틴트 패널 — 플로팅 스크린샷 + 커서 + 말풍선 콜아웃 */
+.panel{background:rgba(255,255,255,.45);border-radius:1.2rem;padding:2.6rem;
+  position:relative}
+.float{position:relative;border-radius:.7rem;overflow:hidden;background:#fff;
+  box-shadow:0 24px 60px rgba(25,24,19,.16)}
+.float img{display:block;width:100%;height:auto}
+.float.crop{max-height:26rem}
+.cursor{position:absolute;width:22px;height:22px;z-index:3;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+.callout{position:absolute;z-index:4;background:#fff;border-radius:.7rem;
+  box-shadow:0 14px 36px rgba(25,24,19,.2);padding:.9rem 1.1rem;max-width:16rem;
+  font-size:.85rem;line-height:1.55}
+.callout b{display:block;color:var(--head);margin-bottom:.25rem;font-size:.88rem}
+
+/* ── 후기 자리 — 지금은 베타 모집 블록 하나로 렌더링 ──
+   실사용 후기가 쌓이면 .recruit를 .reviewgrid(아래 카드 3장)로 교체한다. */
+.reviews{max-width:80rem;margin:3.4rem auto 0;padding:0 2rem}
+.reviewgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));
+  gap:1.2rem}
+.review{border-radius:1rem;padding:1.8rem 1.7rem;background:rgba(255,255,255,.6)}
+.review b{display:block;font-size:1.02rem;color:var(--head);margin-bottom:.5rem;
+  line-height:1.5}
+.review p{font-size:.92rem;color:var(--ink)}
+.review .who{display:block;margin-top:.9rem;font-size:.85rem;color:var(--muted)}
+.recruit{max-width:46rem;margin:5rem auto 5.5rem;padding:2.4rem 2rem;text-align:center;
+  border:1.5px dashed var(--hair);border-radius:1.2rem;background:#fff}
+.recruit b{display:block;font-size:1.15rem;color:var(--head);margin-bottom:.4rem}
+.recruit p{color:var(--muted);font-size:.95rem;margin-bottom:1.2rem}
+/* 접수 폼 — 카드의 가운데 정렬을 유지하되, 입력 칸은 읽는 흐름대로 왼쪽 정렬한다
+   (라벨이 가운데면 어느 칸에 속한 설명인지 눈이 매번 다시 찾는다). */
+#beta{scroll-margin-top:5rem}
+.recruit .breq{max-width:30rem;margin:0 auto;text-align:left;display:grid;gap:.95rem}
+.recruit .breq .row{display:grid;grid-template-columns:1fr 1fr;gap:.95rem}
+.recruit .breq label{display:grid;gap:.35rem;font-size:.86rem;font-weight:600;
+  color:var(--head)}
+.recruit .breq label i{font-style:normal;font-weight:400;color:var(--muted);
+  font-size:.8rem}
+.recruit .breq input{width:100%;font:inherit;font-size:.95rem;color:var(--ink);
+  background:#fff;border:1px solid var(--hair);border-radius:.6rem;
+  padding:.7rem .85rem;outline:none;transition:border-color .15s}
+.recruit .breq input:focus{border-color:var(--head)}
+.recruit .breq input::placeholder{color:#b3ada0}
+.recruit .breq small{font-weight:400;font-size:.78rem;line-height:1.6;color:var(--muted)}
+.recruit .breq small b{display:inline;font-size:inherit;font-weight:700;
+  color:var(--ink);margin:0}
+.recruit .breq .hp{position:absolute;left:-9999px;width:1px;height:1px}
+.recruit .breq .btn{justify-self:center;margin-top:.4rem}
+.recruit .breq .fine{font-size:.8rem;color:var(--muted);text-align:center;margin:0}
+@media (max-width:520px){.recruit .breq .row{grid-template-columns:1fr}}
+
+/* ── 보조 — 불러오기 ── */
+.subsec{padding:4.6rem 0;text-align:center;border-top:1px solid var(--hair)}
+.subsec h3{font-size:clamp(1.3rem,3vw,1.8rem);font-weight:800;margin:.4rem 0 .9rem}
+.subsec p{color:var(--muted);max-width:40rem;margin:0 auto 1.6rem;font-size:.98rem}
+
+/* 기능 행 — 좌 틴트 미니패널, 우 헤어라인 텍스트 레일 */
+.featrows{max-width:80rem;margin:3.6rem auto 0;padding:0 2rem;
+  display:flex;flex-direction:column;gap:2.6rem}
+.featrow{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);
+  gap:2.6rem;align-items:center}
+.featrow .mini{border-radius:1rem;padding:2rem;position:relative}
+.featrow .txt{border-top:1px solid var(--hair);padding-top:1.1rem}
+.featrow .txt b{display:block;font-size:1.08rem;color:var(--head);
+  line-height:1.5;font-weight:700}
+.featrow .txt span{display:block;margin-top:.4rem;font-size:.92rem;color:var(--muted)}
+@media (max-width:60rem){.featrow{grid-template-columns:1fr}}
+
+/* 인용형 카드 3열(플랫 틴트) — '이런 말, 해봤다면' */
+.quotes{max-width:80rem;margin:3.6rem auto 0;padding:0 2rem;display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.2rem}
+.quote{border-radius:1rem;padding:1.8rem 1.7rem;
+  transition:box-shadow .25s ease}
+.quote:hover{box-shadow:0 12px 28px rgba(25,24,19,.1)}
+.quote b{display:block;font-size:1.05rem;color:var(--head);margin-bottom:.55rem;
+  line-height:1.5}
+.quote p{font-size:.92rem;color:var(--muted)}
+
+/* 보조 섹션 스크린샷(불러오기) */
+.subvis{max-width:54rem;margin:2.6rem auto 0;position:relative;text-align:left}
+
+/* 마이크로 인터랙션 — 호버(포인터 기기), 모션은 .anim 게이트 뒤 */
+.btn{transition:background .18s ease,transform .18s ease,box-shadow .18s ease}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(25,24,19,.15)}
+.btn .arr{transition:transform .18s ease}
+.btn:hover .arr{transform:translateX(3px)}
+.seg a{transition:background .18s ease,color .18s ease}
+.prod{transition:background .3s ease}
+.prod:hover{background:#f4f1e9}
+.prod .vis{transition:opacity .45s ease,transform .5s ease}
+.prod:hover .vis{opacity:.8;transform:translateX(-.5rem)}
+.panel .float{transition:transform .45s cubic-bezier(.22,.7,.25,1),box-shadow .45s ease}
+.panel:hover .float{transform:translateY(-6px);box-shadow:0 32px 70px rgba(25,24,19,.2)}
+.anim .callout{animation:bob 5.5s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.anim .chev{animation:chevdip 2.2s ease-in-out infinite;display:inline-block}
+@keyframes chevdip{0%,100%{transform:translateY(0);opacity:.65}
+  50%{transform:translateY(6px);opacity:1}}
+
+/* 스크롤 리빌 — JS가 <html>에 .anim을 달 때만 숨김(감속 선호·no-JS는 그대로 보임) */
+.anim .rv{opacity:0;transform:translateY(18px);
+  transition:opacity .7s ease,transform .7s cubic-bezier(.22,.7,.25,1)}
+.anim .rv.in{opacity:1;transform:none}
+.anim .stagger>*{opacity:0;transform:translateY(16px);
+  transition:opacity .6s ease,transform .6s cubic-bezier(.22,.7,.25,1)}
+.anim .stagger.in>*{opacity:1;transform:none}
+.anim .stagger.in>*:nth-child(2){transition-delay:.1s}
+.anim .stagger.in>*:nth-child(3){transition-delay:.2s}
+
+/* ── FAQ ── */
+.faqsec{padding:6rem 0}
+.faqsec h2{text-align:center;font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;
+  margin-bottom:2.6rem}
+.faq{max-width:46rem;margin:0 auto;padding:0 2rem}
+.faq details{border-top:1px solid var(--hair);padding:1.15rem .2rem}
+.faq details:last-child{border-bottom:1px solid var(--hair)}
+.faq summary{font-weight:700;cursor:pointer;list-style:none;display:flex;
+  justify-content:space-between;gap:1rem;color:var(--ink);font-size:1.02rem}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--muted);font-weight:500}
+.faq details[open] summary::after{content:"−"}
+.faq details p{color:var(--muted);margin-top:.6rem;font-size:.95rem;max-width:40rem}
+
+/* ── 마지막 CTA + 푸터 ── */
+.finalcta{padding:6.5rem 0;text-align:center;background:
+  linear-gradient(180deg,#fff 0%,var(--sage) 100%)}
+.finalcta h2{font-size:clamp(2rem,5vw,3.1rem);font-weight:800;margin-bottom:1rem}
+.finalcta p{color:var(--muted);margin-bottom:2.2rem;font-size:1.08rem}
+.ctas{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center}
+footer{background:var(--bg);border-top:1px solid var(--line);padding:3.4rem 0 3.8rem}
+footer .cols{max-width:75rem;margin:0 auto;padding:0 2rem;display:grid;
+  grid-template-columns:2fr repeat(3,1fr);gap:2rem;margin-bottom:2.6rem}
+@media (max-width:48rem){footer .cols{grid-template-columns:1fr 1fr}}
+footer .brand{font-weight:800;font-size:1.25rem;color:var(--head)}
+footer .brand b{color:var(--accent)}
+footer h4{font-size:.8rem;letter-spacing:.1em;color:var(--muted);
+  text-transform:uppercase;margin-bottom:.75rem}
+footer ul{list-style:none}
+footer li{margin:.4rem 0;font-size:.92rem}
+footer li a{color:var(--ink);text-decoration:none}
+footer li a:hover{color:var(--accent)}
+footer .base{max-width:75rem;margin:0 auto;padding:1.4rem 2rem 0;
+  border-top:1px solid var(--line);display:flex;gap:1rem;flex-wrap:wrap;
+  justify-content:space-between}
+
+/* 앱의 종이·잉크 체계와 맞춘 절제된 소개 화면. */
+.btn,.btn.pill,.btn.sm,.seg,.seg a,.panel,.float,.callout,.quote,.review,.recruit,
+.featrow .mini{border-radius:0}
+.float,.callout,.quote:hover,.btn:hover{box-shadow:none}
+.detail.tint-sage,.detail.tint-mist,.detail.tint-sand,.finalcta{background:var(--bg)}
+.detail{border-top:1px solid var(--hair)}
+.panel{padding:0;background:transparent}
+.quote{padding:1.2rem 0;border-top:1px solid var(--hair);background:transparent!important}
+.btn:hover{transform:none}
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="in">
+    <a class="logo" href="#top">until<b>.</b></a>
+    <div class="menu">
+      <a href="#how">작동 방식</a>
+      <a href="#draft">경계선 초안</a>
+      <a href="#check">제출 직전</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a class="btn sm" href="#beta">시작하기</a>
+  </div>
+</nav>
+
+<div id="top"></div>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="tag">WORKS WITH <b>서울대 eTL</b> · CANVAS LMS</p>
+    <h1>과제를 시작해서<em>제출 직전까지</em></h1>
+    <p class="sub">과제와 자료는 Until이 정리하고,<br>관점과 선택은 직접 결정합니다.</p>
+    <div class="ctarow">
+      <a class="btn" href="#" data-app-url="" data-app-path="/">베타 코드로 시작하기 <span class="arr">→</span></a>
+      <span class="micro">초대 코드 입력 후 무료 · 카드 불필요</span>
+    </div>
+    <p class="proof">서울대학교 학생 <b>클로즈드 베타</b> 운영 중 — 초대는
+      <a href="mailto:minjun05@snu.ac.kr?subject=Until%20베타%20초대%20요청">메일로</a></p>
+    <div class="chev">⌄</div>
+  </div>
+</header>
+
+<section class="how rv" id="how">
+  <div class="head">
+    <div><p class="eyebrow num">작동 방식</p><h2>실제 작업은 이 순서로 이어집니다</h2></div>
+    <p>예시용 설명이 아니라 현재 앱의 입력·초안·완성·제출 준비 화면과 같은 순서입니다.</p>
+  </div>
+  <ol>
+    <li><span>01</span><b>과제와 자료를 받습니다</b><p>eTL에서 불러오거나 직접 붙여넣습니다.</p></li>
+    <li><span>02</span><b>요구사항을 정리합니다</b><p>분량·형식·마감과 관련 자료를 확인합니다.</p></li>
+    <li><span>03</span><b>경계선 초안을 만듭니다</b><p>근거로 채우고 판단할 자리는 남깁니다.</p></li>
+    <li><span>04</span><b>결정만 직접 답합니다</b><p>처음에는 네 가지만 펼쳐 빠르게 답합니다.</p></li>
+    <li><span>05</span><b>올릴 파일을 확인합니다</b><p>제출 직전 점검 후 eTL에는 직접 올립니다.</p></li>
+  </ol>
+</section>
+
+<div class="prods">
+  <div class="in stagger">
+    <div class="prod">
+      <p class="eyebrow">참가 보고서 · 결과 보고서 · 확인서</p>
+      <div class="name">양식 맞춰<br>내야 할 때</div>
+      <a class="btn pill" href="#form">자세히 보기 <span class="arr">→</span></a>
+      <div class="vis"><img src="img/profile.jpg" alt="" loading="lazy"></div>
+    </div>
+    <div class="prod">
+      <p class="eyebrow">리포트 · 에세이</p>
+      <div class="name">초안이<br>막힐 때</div>
+      <a class="btn pill" href="#draft">자세히 보기 <span class="arr">→</span></a>
+      <div class="vis"><img src="img/draft.jpg" alt="" loading="lazy"></div>
+    </div>
+    <div class="prod">
+      <p class="eyebrow">내기 전 마지막 확인</p>
+      <div class="name">제출 직전<br>확인할 때</div>
+      <a class="btn pill" href="#check">자세히 보기 <span class="arr">→</span></a>
+      <div class="vis"><img src="img/readiness.jpg" alt="" loading="lazy"></div>
+    </div>
+  </div>
+</div>
+
+<div class="trust rv">
+  <p class="cap">지금 이렇게 돌아갑니다</p>
+  <div class="row">
+    <span>서울대 eTL 연동</span><span>결정은 100% 내 클릭</span>
+    <span>토큰 미저장</span><span>원본 양식 hwpx 출력</span>
+    <span>Apache-2.0</span>
+  </div>
+</div>
+
+<section class="ask rv">
+  <h2>오늘 어떤 과제를<br>끝내야 하나요?</h2>
+  <div class="seg">
+    <a href="#form" class="on">양식 보고서</a><a href="#draft">리포트</a>
+    <a href="#draft">에세이</a><a href="#check">제출 점검</a>
+  </div>
+</section>
+
+<section class="detail tint-sage" id="form">
+  <div class="in rv">
+    <div class="rail">
+      <p class="eyebrow num">01 · 양식 맞춰 내야 할 때</p>
+      <div class="name">양식은 정해져 있는데,<br>AI는 통짜 글만 뱉나요?</div>
+      <p class="hook">참가 보고서, 결과 보고서, 확인서 — 칸은 정해져 있고 채우는 건 늘 잡무였죠.</p>
+      <ul class="checks">
+        <li>올린 hwpx 양식 그대로, 칸이 채워진 파일을 받아요</li>
+        <li>“강의당 300자”는 항목마다 따로 지켜져요 — 전체가 아니라</li>
+        <li>학번·학과·이메일은 한 번 저장하면 다시 묻지 않아요</li>
+      </ul>
+      <div class="ctas">
+        <a class="btn" href="#beta">eTL 과제로 시작하기 <span class="arr">→</span></a>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="float crop"><div class="chrome"><i></i><i></i><i></i><span>until / 내 프로필</span></div><img src="img/profile.jpg"
+        alt="기본정보를 한 번 저장하면 양식의 기본정보 칸을 되묻지 않는 실제 화면" loading="lazy"></div>
+      <div class="callout" style="right:-.6rem;bottom:-1.2rem">
+        <b>기본정보는 한 번만</b>
+        저장해 두면 보고서 양식의 이름·학번·소속 칸엔 다시 답하지 않아요.
+      </div>
+    </div>
+  </div>
+  <div class="quotes stagger">
+    <div class="quote" style="background:var(--sage-2)">
+      <b>“한글 파일로 내야 하는데”</b>
+      <p>업로드한 hwpx 양식의 칸을 채운 파일로 받아요.</p></div>
+    <div class="quote" style="background:var(--sage-2)">
+      <b>“칸마다 분량이 다른데”</b>
+      <p>항목별 분량을 각각 지켜 채우고, 모자라면 그 항목만 다시 써요.</p></div>
+    <div class="quote" style="background:var(--sage-2)">
+      <b>“학번을 또 쓰라고?”</b>
+      <p>프로필에 한 번 저장하면 기본정보 칸은 되묻지 않고 채워져요.</p></div>
+  </div>
+  <!-- 후기 자리(실사용 후기 확보 시 여기에 .reviews > .reviewgrid 렌더):
+  <div class="reviews">
+    <div class="reviewgrid">
+      <div class="review">
+        <b>“상황 기반 제목”</b>
+        <p>후기 본문 한두 문장.</p>
+        <span class="who">— 김O민, 서울대 전기정보공학부 3학년</span>
+      </div>
+      … 카드 3장 …
+    </div>
+  </div>
+  -->
+</section>
+
+<section class="detail tint-mist" id="draft">
+  <div class="in rv">
+    <div class="rail">
+      <p class="eyebrow num">02 · 리포트 초안이 막힐 때</p>
+      <div class="name">통째로 맡기면,<br>그건 내 글이 아니잖아요?</div>
+      <p class="hook">자료로 채울 수 있는 건 전부 쓰고, 당신의 판단이 필요한 자리는 비워서 드려요.</p>
+      <ul class="checks">
+        <li>관점·논지는 후보만 받고, 고르는 건 내가 해요</li>
+        <li>한 줄로 답하면 내 문체로 본문에 녹아요</li>
+        <li>근거 없는 문장은 안 쓰고, 인용은 [자료N]으로 남아요</li>
+      </ul>
+      <div class="ctas">
+        <a class="btn" href="#beta">초안 만들기 <span class="arr">→</span></a>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="float crop"><div class="chrome"><i></i><i></i><i></i><span>until / 경계선 초안</span></div><img src="img/draft.jpg"
+        alt="경계선 초안 — 본문은 채워지고 결정 지점만 비워진 실제 화면" loading="lazy"></div>
+      <svg class="cursor" style="left:56%;top:42%" viewBox="0 0 24 24">
+        <path d="M5 3l14 8-6 1.5L10 19z" fill="#191813" stroke="#fff" stroke-width="1.4"/></svg>
+      <div class="callout" style="right:-.6rem;top:52%">
+        <b>여기부터는 당신 몫</b>
+        관점·선택이 필요한 자리는 후보와 함께 비워 둬요 — 검증기가 코드로 지켜요.
+      </div>
+    </div>
+  </div>
+  <div class="featrows">
+    <div class="featrow rv">
+      <div class="mini" style="background:#e4e1d6">
+        <div class="float"><div class="chrome"><i></i><i></i><i></i><span>until / 내 답</span></div><img src="img/answers.jpg"
+          alt="결정에 평소 말투로 답하는 실제 화면" loading="lazy"></div>
+      </div>
+      <div class="txt"><b>답은 한 줄이면 충분해요</b>
+        <span>후보 중 고르거나 반말로 적어도, 본문엔 내 문체로 녹아요.</span></div>
+    </div>
+    <div class="featrow rv">
+      <div class="mini" style="background:#e4e1d6">
+        <div class="float crop" style="max-height:15rem"><div class="chrome"><i></i><i></i><i></i><span>until / 완성본</span></div><img src="img/final.jpg"
+          alt="답이 반영된 완성본 실제 화면" loading="lazy"></div>
+      </div>
+      <div class="txt"><b>내가 답한 것만 내 글이 돼요</b>
+        <span>내 답이 어디에 어떻게 반영됐는지 변경 내역으로 확인해요.</span></div>
+    </div>
+  </div>
+  <div class="quotes stagger">
+    <div class="quote" style="background:#e4e1d6">
+      <b>“관점은 정해주지 마”</b>
+      <p>논지 선택은 후보만 — 확정은 언제나 내 클릭이에요.</p></div>
+    <div class="quote" style="background:#e4e1d6">
+      <b>“내 문체로 나오게”</b>
+      <p>내가 쓴 글을 올리면 초안부터 내 말투로 시작해요.</p></div>
+    <div class="quote" style="background:#e4e1d6">
+      <b>“근거 없는 말은 빼”</b>
+      <p>자료로 못 채우는 자리는 지어내지 않고 비워서 물어봐요.</p></div>
+  </div>
+  <!-- 후기 자리(실사용 후기 확보 시 .reviews > .reviewgrid 렌더 — #form 섹션의 주석 참고) -->
+</section>
+
+<section class="detail tint-sand" id="check">
+  <div class="in rv">
+    <div class="rail">
+      <p class="eyebrow num">03 · 제출 직전 확인할 때</p>
+      <div class="name">공지 다시 열어서 양식 확인,<br>그만해도 됩니다.</div>
+      <p class="hook">“양식 지켰나?”를 당신에게 되묻지 않아요. 지켰다는 근거를 보여드려요.</p>
+      <ul class="checks">
+        <li>항목별 분량이 모자라면, 어느 항목이 몇 자 모자란지 알려줘요</li>
+        <li>원본 양식의 표·항목이 유지됐는지 근거와 함께 확인해요</li>
+        <li>마감은 D-day로 자동 계산돼요</li>
+      </ul>
+      <div class="ctas">
+        <a class="btn" href="#beta">내 과제 점검하기 <span class="arr">→</span></a>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="float"><div class="chrome"><i></i><i></i><i></i><span>until / 제출 준비 점검</span></div><img src="img/readiness.jpg"
+        alt="제출 준비 점검 — 마감·분량·인용·양식을 한 화면에서 확인" loading="lazy"></div>
+      <div class="callout" style="left:1rem;bottom:-1.2rem">
+        <b>부족하면 부족하다고</b>
+        “강의당 300자” 같은 항목별 요건도 각각 판정받아요.
+      </div>
+    </div>
+  </div>
+  <div class="quotes stagger">
+    <div class="quote" style="background:#e8e6d8">
+      <b>“마감이 언제더라”</b>
+      <p>D-day와 마감 시각을 자동 감지해 배지로 보여줘요.</p></div>
+    <div class="quote" style="background:#e8e6d8">
+      <b>“분량 됐나?”</b>
+      <p>항목별 글자 수를 재서, 몇 자 모자란지까지 짚어줘요.</p></div>
+    <div class="quote" style="background:#e8e6d8">
+      <b>“표 안 깨졌겠지?”</b>
+      <p>원본 양식의 표·항목이 유지됐는지 근거와 함께 보여줘요.</p></div>
+  </div>
+  <!-- 후기 자리(실사용 후기 확보 시 .reviews > .reviewgrid 렌더 — #form 섹션의 주석 참고) -->
+</section>
+
+<div class="wrap" id="beta">
+  <div class="recruit rv">
+    <b>베타 참여자를 찾고 있어요</b>
+    <p>until로 과제를 끝내보고, 어떻게 썼는지 한 줄 남겨주실 분.<br>
+      아래를 남겨 주시면 순서대로 초대장을 보내 드려요.</p>
+    <!-- action은 no-JS 대비 하드코딩하고, 아래 스크립트가 APP_URL로 덮어쓴다
+         (앱 주소의 단일 출처는 APP_URL 하나 — 둘이 갈리면 폼만 옛 주소로 간다). -->
+    <form class="breq" method="post" data-app-form data-app-path="/beta-request"
+          action="https://until-app.onrender.com/beta-request">
+      <div class="row">
+        <label>학교 <input name="school" required maxlength="60" placeholder="서울대학교"></label>
+        <label>전공 <input name="major" required maxlength="60" placeholder="컴퓨터공학부"></label>
+      </div>
+      <label>이메일 <input type="email" name="email" required maxlength="120"
+        placeholder="초대장을 받을 주소"></label>
+      <label class="opt"><span>eTL 토큰 <i>선택</i></span>
+        <input name="etl_token" maxlength="400" autocomplete="off" spellcheck="false"
+          placeholder="비워 두셔도 됩니다">
+        <small>주시면 실제 과제로 미리 맞춰 보고 연락드려요. 다만 이 토큰은
+          <b>eTL 계정 전체</b>(성적·제출물 포함)를 여는 열쇠예요 —
+          부담되시면 비워 두세요. 나중에 직접 넣으셔도 똑같이 됩니다.</small></label>
+      <!-- 허니팟: 사람 눈에 안 보이는 칸. 채워져 오면 봇이다. -->
+      <input type="text" name="website" tabindex="-1" autocomplete="off"
+        aria-hidden="true" class="hp">
+      <button class="btn pill" type="submit">베타 초대 요청하기 <span class="arr">→</span></button>
+      <p class="fine">답장은 적어 주신 주소로만 드려요. 메일이 편하시면
+        <a href="mailto:minjun05@snu.ac.kr?subject=Until%20베타%20초대%20요청">직접 보내셔도</a> 됩니다.</p>
+    </form>
+  </div>
+</div>
+
+<section class="subsec" id="inbox">
+  <div class="wrap rv">
+    <p class="eyebrow num">보조 기능 · 불러오기</p>
+    <h3>eTL 토큰 하나면 과제가 마감 임박순으로 줄을 섭니다</h3>
+    <p>과목마다 들어가 뒤질 필요 없이, 미제출 과제가 D-day순으로 정렬돼요.<br>
+      eTL 없이 과제 텍스트를 붙여넣어도 같은 흐름으로 돌아가요.</p>
+    <a class="btn pill" href="#beta">내 과제 불러오기 <span class="arr">→</span></a>
+    <div class="subvis">
+      <div class="float"><div class="chrome"><i></i><i></i><i></i><span>until / eTL 연결 — 과제 목록 불러오기</span></div><img src="img/home.jpg"
+        alt="Until eTL 연결 화면 — 토큰 한 번으로 과제 목록 불러오기" loading="lazy"></div>
+      <div class="callout" style="right:.4rem;bottom:14%">
+        <b>붙여넣어도 됩니다</b>
+        eTL 없이도 과제 텍스트만 붙여넣으면 같은 흐름으로 돌아가요.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="faqsec" id="faq">
+  <h2 class="rv">정직하게 답할게요</h2>
+  <div class="faq rv">
+    <details open><summary>이거 대필 아니에요?</summary>
+      <p>반대입니다. 산출물은 '내 결정이 비어 있는 초안'이고, 완성은 내 답으로만
+      이뤄집니다. 판단을 대신 정하는 순간을 검증기가 막아요.</p></details>
+    <details><summary>수업에서 AI를 써도 되나요?</summary>
+      <p>수업마다 정책이 다릅니다 — 그 확인과 판단도 당신 몫이에요.
+      Until은 그 판단조차 대신 정하지 않습니다.</p></details>
+    <details><summary>내 데이터는요?</summary>
+      <p>eTL 토큰은 기본적으로 세션 메모리에만 둡니다. 로그인 후 '다음에도 자동으로
+      연결'을 켠 경우에만 내 계정에 암호화해 보관하고, 설정에서 언제든 지울 수
+      있어요. 답 히스토리도 언제든 보고 지울 수 있고, 코드는 오픈소스(Apache-2.0)
+      입니다.</p></details>
+    <details><summary>무료인가요?</summary>
+      <p>베타는 무료 체험 크레딧으로 시작합니다. 로컬 버전은 계속 무료예요.</p></details>
+    <details><summary>서울대만 쓸 수 있나요?</summary>
+      <p>베타는 서울대 eTL 중심이지만, 붙여넣기 방식은 학교와 무관하게 동작합니다.</p></details>
+    <details><summary>모바일에서도 되나요?</summary>
+      <p>양식 파일을 다루고 초안을 다듬는 일은 넓은 화면에서 하는 작업이라,
+      데스크탑에 맞춰 설계했습니다. 모바일에서는 과제 목록과 마감 확인까지
+      편하게 되고, 실제 작성은 데스크탑에서 이어서 하시면 됩니다.</p></details>
+    <details><summary>그냥 ChatGPT 쓰면 안 되나요?</summary>
+      <p>써보시면 압니다 — 12페이지를 시켜도 700자를 주고, "강의당 300자"를
+      전체 300자로 줄이고, 양식은 통짜 글로 돌려줍니다.
+      until은 그 지시를 코드로 검증하고, 어긋나면 그 항목만 다시 씁니다.</p></details>
+    <details><summary>eTL에도 AI가 생긴다던데요?</summary>
+      <p>맞아요 — Canvas(eTL의 기반)의 AI는 교수님의 강의 관리용, 그리고 학생용은
+      플래시카드·연습 퀴즈 같은 '공부 도구'입니다. 제출물을 만들어 주는 도구는
+      아니고, 학교가 고객인 LMS는 앞으로도 그걸 만들 수 없어요. until은 그 반대편 —
+      과제 산출물을 당신의 판단 직전까지 만들고, 판단은 남겨 두는 도구입니다.</p></details>
+  </div>
+</section>
+
+<section class="finalcta">
+  <div class="wrap rv">
+    <h2>겹친 마감,<br>오늘 하나는 끝내죠</h2>
+    <p>붙여넣기 → 초안 → 내 답 → 내 말투의 완성본. 5분이면 첫 초안.</p>
+    <div class="ctas">
+      <a class="btn" href="#" data-app-url="" data-app-path="/">베타 코드로 시작하기 <span class="arr">→</span></a>
+    </div>
+    <p class="meta" style="margin-top:1.2rem">초대 코드가 없다면 —
+      <a href="#beta">초대 요청하기</a></p>
+  </div>
+</section>
+
+<footer>
+  <div class="cols">
+    <div>
+      <div class="brand">until<b>.</b></div>
+      <p class="meta" style="margin-top:.5rem;max-width:16rem">과제를 경계선 직전까지.
+      결정은 당신 몫. — 서울대학교 학생 베타</p>
+    </div>
+    <div>
+      <h4>제품</h4>
+      <ul>
+        <li><a href="#form">양식 채우기</a></li>
+        <li><a href="#draft">경계선 초안</a></li>
+        <li><a href="#check">제출 점검</a></li>
+        <li><a href="#inbox">불러오기</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>신뢰</h4>
+      <ul>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#draft">경계선 원칙</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>문의</h4>
+      <ul>
+        <li><a href="mailto:minjun05@snu.ac.kr">이메일</a></li>
+        <li><a href="#beta">베타 초대 요청</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="base">
+    <span class="meta">© 2026 Until</span>
+    <span class="meta">화면 이미지는 실제 제품 화면입니다</span>
+  </div>
+</footer>
+
+<script>
+// 배포 후 앱 URL을 여기 한 곳만 바꾸면 모든 CTA가 연결됩니다.
+var APP_URL = "https://until-app.onrender.com";
+var appWakeState = "idle";
+var appWakePromise = null;
+
+function appTarget(path) {
+  if (!APP_URL) return "";
+  return APP_URL.replace(/\/+$/, "") + (path || "/");
+}
+
+function prewakeApp() {
+  if (!APP_URL || appWakePromise) return appWakePromise;
+  appWakeState = "pending";
+  var controller = "AbortController" in window ? new AbortController() : null;
+  var timeout = setTimeout(function () {
+    if (controller) controller.abort();
+  }, 40000);
+  appWakePromise = fetch(appTarget("/healthz"), {
+    mode: "no-cors",
+    cache: "no-store",
+    signal: controller ? controller.signal : undefined
+  }).then(function () {
+    appWakeState = "ready";
+  }).catch(function () {
+    // Progressive fallback: a blocked or failed preflight restores normal navigation.
+    appWakeState = "failed";
+  }).then(function () {
+    clearTimeout(timeout);
+  });
+  return appWakePromise;
+}
+
+document.querySelectorAll("[data-app-url]").forEach(function (a) {
+  if (APP_URL) {
+    var path = a.getAttribute("data-app-path") || "/";
+    a.href = appTarget(path);
+    a.addEventListener("click", function (e) {
+      if (appWakeState !== "pending") return;
+      e.preventDefault();
+      var original = a.innerHTML;
+      a.textContent = "서버 깨우는 중… (최대 40초)";
+      a.setAttribute("aria-busy", "true");
+      appWakePromise.then(function () {
+        a.innerHTML = original;
+        a.removeAttribute("aria-busy");
+        window.location.href = a.href;
+      });
+    });
+  }
+  else a.addEventListener("click", function (e) {
+    e.preventDefault();
+    alert("베타 앱 준비 중이에요. 초대 요청은 메일로 부탁드려요!");
+  });
+});
+document.querySelectorAll("[data-app-form]").forEach(function (f) {
+  // 폼은 다른 오리진으로 가는 일반 POST다(x-www-form-urlencoded는 프리플라이트가
+  // 없어 JS 없이도 전송된다). 여기서는 주소만 APP_URL 하나로 맞춰 준다.
+  if (APP_URL) f.action = appTarget(f.getAttribute("data-app-path") || "/");
+});
+// 접수 폼으로 보내는 CTA — 도착하면 첫 칸에 포커스를 준다. 스크롤만 하고 끝나면
+// "여기서 뭘 하라는 거지"가 되고, 키보드 사용자는 다시 탭으로 내려와야 한다.
+document.querySelectorAll('a[href="#beta"]').forEach(function (a) {
+  a.addEventListener("click", function () {
+    setTimeout(function () {
+      var first = document.querySelector('#beta input[name="school"]');
+      if (first) first.focus({preventScroll: true});
+    }, 420);
+  });
+});
+if (APP_URL && "fetch" in window) prewakeApp();
+// mailto 폴백 — 기본 메일 앱이 없는 브라우저에선 mailto 클릭이 무반응이라
+// '버튼이 고장난' 경험이 된다. 이동은 막지 않되(메일 앱 있으면 그대로 열림)
+// 주소를 복사하고 토스트로 알려 어느 환경에서든 다음 행동이 가능하게.
+document.querySelectorAll('a[href^="mailto:"]').forEach(function (a) {
+  a.addEventListener("click", function () {
+    var addr = a.getAttribute("href").replace(/^mailto:/, "").split("?")[0];
+    try {
+      if (navigator.clipboard) navigator.clipboard.writeText(addr);
+    } catch (e) {}
+    var old = document.getElementById("mailtoast");
+    if (old) old.remove();
+    var t = document.createElement("div");
+    t.id = "mailtoast";
+    t.textContent = "메일 앱이 안 열리면 — 주소를 복사해 뒀어요: " + addr;
+    t.style.cssText = "position:fixed;left:50%;bottom:28px;transform:translateX(-50%);" +
+      "background:#111;color:#fff;padding:.65rem 1.1rem;border-radius:999px;" +
+      "font-size:.85rem;z-index:99;box-shadow:0 4px 18px rgba(0,0,0,.25);" +
+      "max-width:92vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis";
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 4500);
+  });
+});
+// 스크롤 리빌 — 감속 선호·구형 브라우저·no-JS에서는 애니메이션 없이 그대로 보인다.
+try {
+  if (window.matchMedia && !matchMedia("(prefers-reduced-motion: reduce)").matches
+      && "IntersectionObserver" in window) {
+    document.documentElement.classList.add("anim");
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
+      });
+    }, {threshold: .12, rootMargin: "0px 0px -8% 0px"});
+    document.querySelectorAll(".rv,.stagger").forEach(function (el) { io.observe(el); });
+  }
+} catch (e) {}
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+# 커밋 전 자동 점검. 설치(1회):
+#   pip install pre-commit
+#   pre-commit install
+#
+# 왜 필요한가: 이 레포는 eTL 베어러 토큰과 팀원 성적·교수 코멘트 경로를 다룬다.
+# AI 에이전트가 `git add .`를 실행하는 시나리오는 실재하고, 토큰 한 건이
+# 데이터 정책(팀원 토큰 안 받기 / 원문·신호 파이프 분리) 전체를 무효화한다.
+#
+# --no-verify로 우회하지 마라. 걸리면 값을 지우고 .env로 옮겨라.
+
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks
+        args: ["--config", ".gitleaks.toml"]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=2048"]
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: end-of-file-fixer
+        exclude: '^(examples/|_until_work/)'
+      - id: mixed-line-ending
+        args: ["--fix=no"]   # Windows 팀원 있음 — 강제 변환 대신 감지만
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      - id: ruff
+        args: ["check"]
+
+  - repo: local
+    hooks:
+      - id: no-until-work
+        name: "_until_work/ 산출물 커밋 차단"
+        entry: "런타임 산출물(_until_work/)은 커밋 금지 — 학생 과제 원문·세션이 들어있다"
+        language: fail
+        files: '^_until_work/'
+      - id: no-report-md
+        name: "report.md 커밋 차단"
+        entry: "report.md는 실행마다 재생성되는 개인 과제 산출물이다 — 커밋 금지"
+        language: fail
+        files: '^report\.md$'

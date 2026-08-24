@@ -1,0 +1,29 @@
+# 오프라인 데모/테스트(Mock)는 추가 의존성 없이 동작.
+# 아래는 최신 기술·OSS 통합을 실제로 켤 때 설치(선택):
+
+# [1] ETL 업그레이드 — IBM Docling (MIT): PDF/표/구조 인식 마크다운, 토큰 0
+docling>=2.0
+
+# [2][3][4] 라이브 LLM — Citations + Prompt Caching + Structured Outputs
+anthropic>=0.40
+
+# PDF 폴백(베이직 ETL)
+pymupdf>=1.24
+
+# [5] 프롬프트 자동 최적화 — DSPy + GEPA (오프라인 최적화에만 사용)
+dspy>=2.5
+
+# eTL 라이브 접속(제품용 브라우저 자동화)
+playwright>=1.40
+
+# 관련도 검색 업그레이드(선택): 미설치 시 키워드 검색으로 폴백
+sentence-transformers>=3.0
+
+# 발표 과제의 실제 .pptx 내보내기(웹에서 발표 유형일 때만 지연 import)
+python-pptx>=1.0
+
+# 웹 UI 템플릿 경계(미설치 mock은 내장 폴백)
+jinja2>=3.1
+fastapi>=0.115
+uvicorn>=0.30
+python-multipart>=0.0.9

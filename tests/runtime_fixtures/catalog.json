@@ -1,0 +1,301 @@
+{
+  "schema_version": 1,
+  "fixtures": [
+    {
+      "id": "report-happy",
+      "family": "report",
+      "route": "evidence_report",
+      "scenario": "normal",
+      "assignment_path": "cases/report-happy/assignment.md",
+      "source_inputs": [],
+      "required_inputs": [],
+      "policy": {
+        "ai_use": "allowed",
+        "approval_granted": true,
+        "network_allowed": false,
+        "allowed_commands": []
+      },
+      "simulated_run": {
+        "requested_command": null,
+        "exit_code": 0,
+        "generated_artifacts": ["report.md"]
+      },
+      "expected": {
+        "support": "supported",
+        "prepare_status": "pass",
+        "run_status": "succeeded",
+        "validate_status": "pass",
+        "package_status": "pass",
+        "finding_codes": [],
+        "bundle_paths": ["report.md"]
+      }
+    },
+    {
+      "id": "report-missing-source",
+      "family": "report",
+      "route": "evidence_report",
+      "scenario": "missing_input",
+      "assignment_path": "cases/report-missing-source/assignment.md",
+      "source_inputs": [],
+      "required_inputs": ["observation.csv"],
+      "policy": {
+        "ai_use": "allowed",
+        "approval_granted": false,
+        "network_allowed": false,
+        "allowed_commands": []
+      },
+      "simulated_run": {
+        "requested_command": null,
+        "exit_code": null,
+        "generated_artifacts": []
+      },
+      "expected": {
+        "support": "supported",
+        "prepare_status": "block",
+        "run_status": "not_run",
+        "validate_status": "block",
+        "package_status": "block",
+        "finding_codes": ["required_input_missing"],
+        "bundle_paths": []
+      }
+    },
+    {
+      "id": "hdl-dry-run",
+      "family": "hdl",
+      "route": "hdl_lab",
+      "scenario": "normal",
+      "assignment_path": "cases/hdl-dry-run/assignment.md",
+      "source_inputs": ["cases/hdl-dry-run/counter.v"],
+      "required_inputs": ["counter.v"],
+      "policy": {
+        "ai_use": "allowed",
+        "approval_granted": false,
+        "network_allowed": false,
+        "allowed_commands": ["iverilog"]
+      },
+      "simulated_run": {
+        "requested_command": ["iverilog", "-o", "counter.out", "counter.v"],
+        "exit_code": null,
+        "generated_artifacts": []
+      },
+      "expected": {
+        "support": "supported",
+        "prepare_status": "pass",
+        "run_status": "dry_run",
+        "validate_status": "not_run",
+        "package_status": "not_run",
+        "finding_codes": [],
+        "bundle_paths": []
+      }
+    },
+    {
+      "id": "hdl-policy-block",
+      "family": "hdl",
+      "route": "hdl_lab",
+      "scenario": "policy_block",
+      "assignment_path": "cases/hdl-policy-block/assignment.md",
+      "source_inputs": ["cases/hdl-policy-block/design.sv"],
+      "required_inputs": ["design.sv"],
+      "policy": {
+        "ai_use": "allowed",
+        "approval_granted": true,
+        "network_allowed": false,
+        "allowed_commands": ["iverilog"]
+      },
+      "simulated_run": {
+        "requested_command": ["curl", "https://example.invalid/testbench.sv"],
+        "exit_code": null,
+        "generated_artifacts": []
+      },
+      "expected": {
+        "support": "supported",
+        "prepare_status": "pass",
+        "run_status": "block",
+        "validate_status": "block",
+        "package_status": "block",
+        "finding_codes": ["command_not_allowed", "network_disabled"],
+        "bundle_paths": []
+      }
+    },
+    {
+      "id": "data-happy",
+      "family": "data_rmd",
+      "route": "rmd_notebook",
+      "scenario": "normal",
+      "assignment_path": "cases/data-happy/assignment.md",
+      "source_inputs": [
+        "cases/data-happy/analysis.Rmd",
+        "cases/data-happy/measurements.csv"
+      ],
+      "required_inputs": ["analysis.Rmd", "measurements.csv"],
+      "policy": {
+        "ai_use": "allowed",
+        "approval_granted": true,
+        "network_allowed": false,
+        "allowed_commands": ["Rscript"]
+      },
+      "simulated_run": {
+        "requested_command": ["Rscript", "-e", "rmarkdown::render('analysis.Rmd')"],
+        "exit_code": 0,
+        "generated_artifacts": ["analysis.html"]
+      },
+      "expected": {
+        "support": "supported",
+        "prepare_status": "pass",
+        "run_status": "succeeded",
+        "validate_status": "pass",
+        "package_status": "pass",
+        "finding_codes": [],
+        "bundle_paths": ["analysis.Rmd", "measurements.csv"]
+      }
+    },
+    {
+      "id": "data-run-failure",
+      "family": "data_rmd",
+      "route": "rmd_notebook",
+      "scenario": "run_failure",
+      "assignment_path": "cases/data-run-failure/assignment.md",
+      "source_inputs": [
+        "cases/data-run-failure/analyze.py",
+        "cases/data-run-failure/input.csv"
+      ],
+      "required_inputs": ["analyze.py", "input.csv"],
+      "policy": {
+        "ai_use": "allowed",
+        "approval_granted": true,
+        "network_allowed": false,
+        "allowed_commands": ["python"]
+      },
+      "simulated_run": {
+        "requested_command": ["python", "analyze.py"],
+        "exit_code": 2,
+        "generated_artifacts": []
+      },
+      "expected": {
+        "support": "supported",
+        "prepare_status": "pass",
+        "run_status": "failed",
+        "validate_status": "block",
+        "package_status": "block",
+        "finding_codes": ["run_failed"],
+        "bundle_paths": []
+      }
+    },
+    {
+      "id": "presentation-happy",
+      "family": "presentation",
+      "route": "presentation_conversion",
+      "scenario": "normal",
+      "assignment_path": "cases/presentation-happy/assignment.md",
+      "source_inputs": ["cases/presentation-happy/outline.md"],
+      "required_inputs": ["outline.md"],
+      "policy": {
+        "ai_use": "allowed",
+        "approval_granted": true,
+        "network_allowed": false,
+        "allowed_commands": []
+      },
+      "simulated_run": {
+        "requested_command": null,
+        "exit_code": 0,
+        "generated_artifacts": ["briefing.pptx"]
+      },
+      "expected": {
+        "support": "supported",
+        "prepare_status": "pass",
+        "run_status": "succeeded",
+        "validate_status": "pass",
+        "package_status": "pass",
+        "finding_codes": [],
+        "bundle_paths": ["briefing.pptx"]
+      }
+    },
+    {
+      "id": "presentation-package-failure",
+      "family": "presentation",
+      "route": "presentation_conversion",
+      "scenario": "package_failure",
+      "assignment_path": "cases/presentation-package-failure/assignment.md",
+      "source_inputs": ["cases/presentation-package-failure/outline.md"],
+      "required_inputs": ["outline.md"],
+      "policy": {
+        "ai_use": "allowed",
+        "approval_granted": true,
+        "network_allowed": false,
+        "allowed_commands": []
+      },
+      "simulated_run": {
+        "requested_command": null,
+        "exit_code": 0,
+        "generated_artifacts": ["speaker-notes.md"]
+      },
+      "expected": {
+        "support": "supported",
+        "prepare_status": "pass",
+        "run_status": "succeeded",
+        "validate_status": "pass",
+        "package_status": "block",
+        "finding_codes": ["required_bundle_artifact_missing"],
+        "bundle_paths": []
+      }
+    },
+    {
+      "id": "form-happy",
+      "family": "form",
+      "route": "activity_form",
+      "scenario": "normal",
+      "assignment_path": "cases/form-happy/assignment.md",
+      "source_inputs": ["cases/form-happy/template-fields.json"],
+      "required_inputs": ["template-fields.json"],
+      "policy": {
+        "ai_use": "allowed",
+        "approval_granted": true,
+        "network_allowed": false,
+        "allowed_commands": []
+      },
+      "simulated_run": {
+        "requested_command": null,
+        "exit_code": 0,
+        "generated_artifacts": ["completed-form.docx"]
+      },
+      "expected": {
+        "support": "supported",
+        "prepare_status": "pass",
+        "run_status": "succeeded",
+        "validate_status": "pass",
+        "package_status": "pass",
+        "finding_codes": [],
+        "bundle_paths": ["completed-form.docx"]
+      }
+    },
+    {
+      "id": "form-unsupported-proprietary",
+      "family": "form",
+      "route": "activity_form",
+      "scenario": "unsupported",
+      "assignment_path": "cases/form-unsupported-proprietary/assignment.md",
+      "source_inputs": ["cases/form-unsupported-proprietary/template-format.txt"],
+      "required_inputs": ["template-format.txt"],
+      "policy": {
+        "ai_use": "allowed",
+        "approval_granted": false,
+        "network_allowed": false,
+        "allowed_commands": []
+      },
+      "simulated_run": {
+        "requested_command": null,
+        "exit_code": null,
+        "generated_artifacts": []
+      },
+      "expected": {
+        "support": "unsupported",
+        "prepare_status": "not_run",
+        "run_status": "not_run",
+        "validate_status": "not_run",
+        "package_status": "not_run",
+        "finding_codes": ["unsupported_input_format"],
+        "bundle_paths": []
+      }
+    }
+  ]
+}

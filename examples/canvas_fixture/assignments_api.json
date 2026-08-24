@@ -1,0 +1,18 @@
+[
+  {
+    "id": 369118,
+    "course_id": 302199,
+    "name": "<나만의 시선으로 읽는 도시> 과제 초안 작성",
+    "due_at": "2026-06-24T08:00:00+09:00",
+    "html_url": "https://myetl.snu.ac.kr/courses/302199/assignments/369118",
+    "submission": {"workflow_state": "unsubmitted"}
+  },
+  {
+    "id": 369200,
+    "course_id": 302199,
+    "name": "기말 보고서",
+    "due_at": "2026-06-30T23:59:00+09:00",
+    "html_url": "https://myetl.snu.ac.kr/courses/302199/assignments/369200",
+    "submission": {"workflow_state": "submitted", "submitted_at": "2026-06-20T10:00:00Z"}
+  }
+]

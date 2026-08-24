@@ -1,0 +1,71 @@
+# CI — 모든 푸시·PR에서 오프라인 테스트(55스위트)와 실버그 린트를 돌린다.
+# 테스트는 전부 mock·키 불필요(불변 규칙 2)라 시크릿이 필요 없다.
+# 주의: Render 배포는 이 CI와 무관하게 main 푸시 즉시 시작된다 — CI는 안전망.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 21 * * 1"   # 매주 월 06:00 KST — Canvas API 문서 대조(api-spec)
+  workflow_dispatch:
+
+jobs:
+  test:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Lint (ruff — 실버그 규칙만)
+        run: |
+          # Dockerfile과 동일 의존성 + 테스트 전용(ruff·httpx=TestClient).
+          # fastapi·python-pptx 누락으로 asgi/telemetry/presentation 스위트가
+          # 어제부터 CI에서만 깨지던 갭 수정(2026-08-05).
+          pip install --quiet ruff openai pymupdf python-pptx jinja2 fastapi uvicorn python-multipart httpx
+          ruff check .
+      - name: Tests (55 suites, offline)
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python run_tests.py
+
+  api-spec:
+    # Canvas 공개 API 문서(/doc/api/*.json)와 until 의존 엔드포인트 대조 —
+    # Instructure 쪽 제거·지원중단을 조기 감지. 네트워크가 필요해 푸시 CI와
+    # 분리(주 1회 스케줄 + 수동 실행). 실패 = 어댑터 경로 점검 신호.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Canvas API 문서 대조
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python run_spec_check.py
+
+  docker-smoke:
+    # 클라우드 이미지가 빌드되고 mock으로 기동하는지 — openai/pymupdf 누락류 사고 방지.
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -f deploy/Dockerfile -t until-app .
+      - name: Boot + healthz
+        run: |
+          docker run -d --rm -p 8080:8080 -e UNTIL_BACKEND=mock --name until until-app
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8080/healthz | grep -q ok; then
+              echo "healthz ok"; docker stop until; exit 0
+            fi
+            sleep 2
+          done
+          echo "healthz never became ready"; docker logs until; docker stop until; exit 1

@@ -1,0 +1,38 @@
+until-mvp — third-party pattern attribution
+
+This project re-implements (does not vendor) patterns from:
+
+1. guardrails-ai/guardrails  — Apache License 2.0
+   https://github.com/guardrails-ai/guardrails
+   Pattern: Validator.validate() + Guard on_fail=REASK loop.
+   Re-implemented in: until/execution/boundary_guard.py
+
+2. LangChain / LangGraph Human-in-the-Loop
+   https://docs.langchain.com/oss/python/langchain/human-in-the-loop
+   Pattern: approve / edit / reject / respond decision types.
+   Re-implemented in: until/boundary/models.py (Resolution)
+
+Bundled assets:
+
+3. until/webassets/hero.jpg — photo by Aaron Burden on Unsplash
+   https://unsplash.com/  (Unsplash License: free to use, no permission needed;
+   attribution appreciated). Used as the web UI hero image.
+
+---
+
+License compatibility notes (2026-08-23, AGPL-3.0 전환)
+
+This project is licensed under AGPL-3.0-only. The attributions above remain
+valid and unchanged:
+
+4. Apache-2.0 → AGPL-3.0 방향성. 위 1번(guardrails-ai, Apache-2.0)처럼
+   Apache-2.0 저작물을 AGPL-3.0 프로젝트에 포함·재구현하는 것은 한 방향으로
+   허용된다(Apache-2.0 §4 조건을 지키면 AGPL-3.0 저작물에 결합 가능하고,
+   결합물 전체는 AGPL-3.0로 배포된다). 반대 방향 — AGPL 코드를 Apache-2.0
+   저작물로 재배포하는 것 — 은 허용되지 않는다. 어차피 1번은 vendoring이
+   아니라 패턴 재구현이라 실제 결합 자체가 없다.
+
+5. pymupdf (requirements.txt, 선택 의존성) — Dual licensed: GNU AGPL-3.0 또는
+   Artifex 상용 라이선스. 이 프로젝트가 AGPL-3.0이 되면서 AGPL 갈래를 그대로
+   따르면 되고, 이전 Apache-2.0 상태에서 있던 충돌 소지가 사라진다.
+   상용(비공개) 재배포가 필요해지면 Artifex 상용 라이선스를 별도 취득해야 한다.

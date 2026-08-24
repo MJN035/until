@@ -1,0 +1,20 @@
+[
+  {
+    "id": 11,
+    "name": "1주차 도시 읽기",
+    "items": [
+      {"id": 101, "title": "도시 관찰 방법론.pdf", "type": "File",
+       "html_url": "https://myetl.snu.ac.kr/courses/302199/files/501/download"},
+      {"id": 102, "title": "도시와 역사 강의 슬라이드", "type": "Page",
+       "html_url": "https://myetl.snu.ac.kr/courses/302199/pages/slide-1"}
+    ]
+  },
+  {
+    "id": 12,
+    "name": "2주차",
+    "items": [
+      {"id": 103, "title": "통계 기초 정리.pdf", "type": "File",
+       "html_url": "https://myetl.snu.ac.kr/courses/302199/files/502/download"}
+    ]
+  }
+]

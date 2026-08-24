@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Secrets — never commit (.env.example 은 추적 유지)
+.env
+.env.local
+*.key
+
+# Until runtime artifacts
+_until_work/
+report.md
+
+# GEPA 산출물(실행마다 재생성)
+until/optimize/optimized_prompt.txt
+until/optimize/optimized_program.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+node_modules/
+.wrangler/
+_cowork_test
+.superpowers/
+.omx/
+.codex/*
+!.codex/agents/
+!.codex/agents/**
+!.codex/skills/
+!.codex/skills/**
+.codex/skills/.system/**
+!.codex/prompts/
+!.codex/prompts/**
+
+# 운영 산출물(런타임 상태) — CLAUDE.md의 .omc 규정에 따름
+.omc/
+.claude/*
+# until 전용 에이전트·스킬 정의는 추적한다 — docs/COURSE_ALGORITHMS_2026F.md가
+# 이 파일들을 가리키고, `tests/test_runners.py`의 문서 정합성 검사가 실존을 확인한다.
+# (예외를 안 두면 `git add -A`가 조용히 빠뜨려 클론에서만 시험이 깨진다.)
+!.claude/agents/
+!.claude/agents/**
+!.claude/skills/
+!.claude/skills/**

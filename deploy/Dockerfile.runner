@@ -1,0 +1,32 @@
+# Until Runner — 신뢰할 수 없는 코드를 돌리는 별도 서비스.
+#
+# 이 이미지는 **웹 앱과 아무것도 공유하지 않는다**: 시크릿도, 세션도, eTL 토큰도
+# 들어오지 않는다. 표준 라이브러리만 쓰므로 의존성 설치도 없다(공급망 표면 최소화).
+#
+# 격리는 이 이미지가 아니라 **띄우는 방식**이 만든다. 서비스는 기동 시 자기 격리를
+# 시험하고, 증명 못 하면 실행 요청을 전부 거절한다. 최소한 이렇게 띄운다:
+#
+#   docker run --rm --network none --read-only --tmpfs /tmp:rw,size=64m \
+#     --pids-limit 128 --memory 512m --cpus 1 \
+#     -e UNTIL_RUNNER_KEY=... -p 8900:8900 until-runner
+#
+# `--network none`이면 러너에 HTTP로 접근할 수 없으므로, 실제로는 **송신만** 막는
+# 네트워크 정책(방화벽·네트워크 네임스페이스·서비스 메시)을 쓰고 수신만 연다.
+FROM python:3.13-alpine
+
+# 루트로 돌리지 않는다 — 컨테이너 탈출 난이도를 한 겹 올린다.
+RUN adduser -D -u 10001 runner
+WORKDIR /app
+
+# 러너가 쓰는 것만 넣는다 — **웹·파이프라인·LLM 클라이언트·eTL 어댑터는 없다.**
+# 러너 이미지 안에 그것들이 없으면, 설령 뚫려도 훔칠 토큰이 애초에 존재하지 않는다.
+# `until/runtime`은 통째로 넣는다: 패키지 __init__이 서로를 임포트해서 골라 넣으면
+# 깨지고(실측), 어차피 전부 표준 라이브러리만 쓴다.
+COPY until/__init__.py /app/until/__init__.py
+COPY until/runner/     /app/until/runner/
+COPY until/runtime/    /app/until/runtime/
+
+USER runner
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PORT=8900
+EXPOSE 8900
+CMD ["python3", "-m", "until.runner", "--host", "0.0.0.0"]

@@ -1,0 +1,43 @@
+{
+  "name": "local-agent",
+  "command": "<공식 CLI 실행 파일>",
+  "version_args": [
+    "<버전 확인 플래그>"
+  ],
+  "status_args": [
+    "<로그인 상태 확인 플래그>"
+  ],
+  "run_args": [
+    "<비대화형 실행 플래그>",
+    "{prompt}",
+    "<작업공간 제한 플래그>",
+    "{workspace}"
+  ],
+  "prompt_via": "arg",
+  "login_markers": [
+    "not logged in",
+    "please log in",
+    "please login",
+    "login required",
+    "unauthenticated",
+    "not authenticated",
+    "run `login`",
+    "auth required",
+    "로그인이 필요",
+    "로그인 필요",
+    "인증이 필요"
+  ],
+  "limit_markers": [
+    "usage limit",
+    "rate limit",
+    "quota exceeded",
+    "too many requests",
+    "out of credits",
+    "subscription limit",
+    "limit reached",
+    "사용량 한도",
+    "한도 초과",
+    "요청이 너무"
+  ],
+  "probe_timeout_seconds": 20
+}

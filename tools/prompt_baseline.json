@@ -1,0 +1,20 @@
+{
+ "FEWSHOT": "7e9808eb2d34",
+ "FINALIZE_SYSTEM": "874fa2dd8ce0",
+ "PROMPT_VERSION": "1.2.0",
+ "SYSTEM": "c416dfe9c0ea",
+ "TYPE_GUIDANCE": "2bb116cf85cb",
+ "episodes_block": "c8921136a36b",
+ "facts_block": "56f3f8e1f16c",
+ "finalize_user_message": "283ccfc1d38a",
+ "reask_message": "c9e220b0a35c",
+ "tone:academic_prose": "32a4ac511e95",
+ "tone:form_admin": "6e53da071619",
+ "tone:inquiry_to_professor": "61ecd46628a4",
+ "tone:lab_report": "2e69eb536f98",
+ "tone:presentation_script": "62a99836e978",
+ "tone:reflective": "0821d89ff83c",
+ "tone:team_coordination": "81b69414984e",
+ "tone:technical_neutral": "5a45a2f6a144",
+ "user_message": "2e992b48dfb4"
+}

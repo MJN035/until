@@ -1,0 +1,47 @@
+# 결정성 게이트 — "v0.2를 건드리면 v0.1 불변을 확인한다"를 사람 기억이 아니라 기계가 강제한다.
+#
+# 8월은 algo_version을 동결하고 측정하는 달이다. v0.1 출력이 조용히 바뀌면 그 달의 백테스트가
+# 전부 무의미해지는데, 그 사고는 커밋 시점엔 티가 나지 않는다. 그래서 CI에서 막는다.
+#
+# 실패했을 때: tools/determinism_baseline.json 을 무작정 갱신하지 마라. 먼저 v0.2 작업이
+# v0.1 경로로 새어나갔는지 확인한다. 의도한 변경이면
+#   python tools/check_determinism.py --update
+# 로 갱신하고 커밋 메시지에 이유를 남긴다.
+#
+# ci.yml과 분리한 이유: 이 게이트는 실패 의미가 다르다(테스트 실패=버그, 여기 실패=알고리즘
+# 출력 변화). 로그에서 바로 구분되게 별도 워크플로로 둔다.
+name: Determinism
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  determinism:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: 의존성 (mock 경로만 — 키·인터넷 불필요)
+        run: pip install --quiet openai pymupdf python-pptx jinja2 fastapi uvicorn python-multipart httpx
+
+      - name: 결정성 + 기준선 대조
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONHASHSEED: "0"
+          TZ: Asia/Seoul
+        run: python tools/check_determinism.py
+
+      - name: 실패 시 안내
+        if: failure()
+        run: |
+          echo "::error::알고리즘 출력이 기준선과 달라졌다."
+          echo "1) v0.2 작업이 v0.1 경로로 샜는지 먼저 확인 (UNTIL_ALGO_VERSION 게이트 밖 변경)"
+          echo "2) 의도한 변경이면 python tools/check_determinism.py --update 후 이유를 커밋 메시지에"
+          echo "3) 2회 실행 불일치라면 dict/set 순회·시각·난수 등 비결정 요소가 들어간 것"

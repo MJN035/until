@@ -1,0 +1,12 @@
+[
+  {"id": 302199, "name": "도시와 사회", "enrollment_state": "active"},
+  {"id": 305001, "name": "미디어와 사회", "enrollment_state": "active",
+   "term": {"name": "2026-1학기", "end_at": "2099-12-31T23:59:59Z"}},
+  {"id": 309999, "name": null, "access_restricted_by_date": true},
+  {"id": 290001, "name": "지난 학기 과목", "enrollment_state": "active",
+   "term": {"name": "2025-2학기", "end_at": "2025-12-20T23:59:59Z"}},
+  {"id": 290002, "name": "종료된 과목", "enrollment_state": "active",
+   "workflow_state": "completed"},
+  {"id": 290003, "name": "종강일 지난 과목", "enrollment_state": "active",
+   "end_at": "2026-01-05T00:00:00Z"}
+]

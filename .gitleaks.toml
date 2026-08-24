@@ -1,0 +1,68 @@
+# gitleaks 설정 — until 전용 규칙.
+# 기본 규칙셋(gitleaks 내장: OpenAI/Anthropic/Groq/GitHub/AWS 등)을 확장한다.
+# 목적: eTL 베어러 토큰과 소금·세션 키가 커밋에 섞이는 사고 차단.
+# 이 레포는 팀원 성적·교수 코멘트를 다루는 경로(capture/sources/canvas_api.py)를 갖고 있어
+# 토큰 한 건 유출이 데이터 정책 전체를 무효화한다. 우회 금지.
+
+[extend]
+useDefault = true
+
+# ── until 고유 시크릿 ──
+
+[[rules]]
+id = "until-canvas-token"
+description = "eTL(Canvas) 학생 액세스 토큰 — 그 사람의 eTL 신원 전체"
+regex = '''(?i)UNTIL_CANVAS_TOKEN\s*[:=]\s*['"]?([0-9]{3,6}~[A-Za-z0-9]{20,}|[A-Za-z0-9]{40,})'''
+keywords = ["until_canvas_token"]
+
+[[rules]]
+id = "canvas-token-bare"
+description = "Canvas 액세스 토큰 형태(NNNN~xxxxx…) — 변수명 없이 노출된 경우"
+regex = '''\b[0-9]{4,6}~[A-Za-z0-9]{40,}\b'''
+keywords = ["~"]
+
+[[rules]]
+id = "until-project-salt"
+description = "PROJECT/TELEMETRY 소금 — 교체 불가. 유출 시 해시 역산 가능"
+regex = '''(?i)UNTIL_(PROJECT|TELEMETRY)_SALT\s*[:=]\s*['"]?[A-Za-z0-9_\-+/=]{12,}'''
+keywords = ["until_project_salt", "until_telemetry_salt"]
+
+[[rules]]
+id = "until-session-key"
+description = "세션 서명 키 — 교체 시 기존 세션 전부 무효"
+regex = '''(?i)UNTIL_SESSION_KEY\s*[:=]\s*['"]?[A-Za-z0-9_\-+/=]{16,}'''
+keywords = ["until_session_key"]
+
+[[rules]]
+id = "until-kv-token"
+description = "Cloudflare KV 토큰(cfut_)"
+regex = '''\bcfut_[A-Za-z0-9_\-]{20,}\b'''
+keywords = ["cfut_"]
+
+[[rules]]
+id = "until-admin-key"
+description = "/admin 로그인 키"
+regex = '''(?i)UNTIL_ADMIN_KEY\s*[:=]\s*['"]?[A-Za-z0-9_\-+/=]{16,}'''
+keywords = ["until_admin_key"]
+
+[[rules]]
+id = "until-api-key-generic"
+description = "UNTIL_API_KEY 및 백업 사슬(_2 Kimi·_3 Gemini·_4 Groq)"
+regex = '''(?i)UNTIL_API_KEY(_[234])?\s*[:=]\s*['"]?[A-Za-z0-9_\-]{20,}'''
+keywords = ["until_api_key"]
+
+[allowlist]
+description = "예시·문서·테스트 픽스처는 제외"
+paths = [
+  '''\.env\.example$''',
+  '''(^|/)examples/''',
+  '''(^|/)docs/''',
+  '''(^|/)tests/.*fixture''',
+  '''\.gitleaks\.toml$''',
+]
+# 빈 값(.env.example의 `UNTIL_API_KEY=`)과 자리표시자는 오탐이 아니게 처리
+regexes = [
+  '''=\s*$''',
+  '''<[A-Za-z_]+>''',
+  '''(?i)(your|example|placeholder|xxxx|dummy|changeme)''',
+]

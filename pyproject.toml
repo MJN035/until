@@ -1,0 +1,40 @@
+[project]
+name = "until-mvp"
+version = "1.10.0"
+description = "Until — AI agent that drafts everything up to the human-judgment boundary (Draft 경계선)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "AGPL-3.0-only" }
+authors = [{ name = "MJN035", email = "minjun05@snu.ac.kr" }]
+keywords = ["llm", "agent", "education", "moodle", "canvas", "lms", "human-in-the-loop"]
+classifiers = [
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/MJN035/until-mvp"
+Repository = "https://github.com/MJN035/until-mvp"
+
+[project.optional-dependencies]
+local = ["openai>=1.40"]         # --backend local (Groq/Ollama 등 OpenAI 호환)
+live = ["anthropic>=0.40"]       # --backend anthropic: citations/caching/structured outputs
+browser = ["playwright>=1.40"]   # eTL 라이브/SSO 접속(--sso)
+pdf = ["pymupdf>=1.24"]          # 첨부 PDF 본문 파싱(폴백)
+etl = ["docling>=2.0"]           # [1] Docling ETL(PDF/표 구조 인식)
+optimize = ["dspy>=2.5"]         # [5] DSPy+GEPA 프롬프트 최적화
+retrieval = ["sentence-transformers>=3.0"]  # 관련도 검색 임베딩 업그레이드
+presentation = ["python-pptx>=1.0"]  # 발표 초안 → 실제 .pptx 내보내기
+web = ["jinja2>=3.1", "fastapi>=0.115", "uvicorn>=0.30", "python-multipart>=0.0.9"]
+
+[project.scripts]
+until = "until.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+until = ["templates/*.html", "webassets/*.css", "webassets/*.js", "webassets/*.html", "webassets/*.jpg"]

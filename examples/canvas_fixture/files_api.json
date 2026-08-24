@@ -1,0 +1,16 @@
+[
+  {
+    "id": 123456,
+    "display_name": "강의자료.pdf",
+    "filename": "lecture.pdf",
+    "content-type": "application/pdf",
+    "url": "https://myetl.snu.ac.kr/files/123456/download?download_frd=1&verifier=abc"
+  },
+  {
+    "id": 222333,
+    "display_name": "관찰_체크리스트.docx",
+    "filename": "checklist.docx",
+    "content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "url": "https://myetl.snu.ac.kr/files/222333/download?download_frd=1&verifier=def"
+  }
+]

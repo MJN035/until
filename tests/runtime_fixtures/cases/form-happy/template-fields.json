@@ -1,0 +1,4 @@
+{
+  "fields": ["date", "activity", "reflection"],
+  "required": ["date", "activity"]
+}
