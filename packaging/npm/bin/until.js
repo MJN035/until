@@ -61,7 +61,12 @@ function main() {
   const python = findPython();
   fail(python);
 
-  const env = Object.assign({}, process.env, { PYTHONPATH: PY_PATH });
+  // PYTHONIOENCODING을 명시하지 않으면 Windows 콘솔(cp949 등 비-UTF8 코드페이지)에서
+  // 한글이 섞인 출력(도구 설명·JSON-RPC 응답)에 UnicodeEncodeError가 난다 — 실제로
+  // 로컬 설치 후 `until-mcp --list-tools`를 돌려서 재현했다. mcp_server.py의
+  // main()은 stdio 경로(serve)에서만 sys.stdout.reconfigure(encoding="utf-8")를
+  // 하고 --list-tools 경로는 안 거치므로, 인터프리터 시작 전에 환경변수로 강제한다.
+  const env = Object.assign({}, process.env, { PYTHONPATH: PY_PATH, PYTHONIOENCODING: 'utf-8' });
 
   if (cmd === '--list-tools' || cmd === 'list-tools') {
     const r = spawnSync(python, ['-m', 'until.mcp_server', '--list-tools'],

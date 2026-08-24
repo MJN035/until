@@ -701,6 +701,15 @@ def main(argv=None) -> int:
     from .config import load_dotenv
     load_dotenv()
     argv = list(sys.argv[1:] if argv is None else argv)
+    # 다른 분기보다 먼저 재설정한다 — Windows 콘솔(cp949 등 비-UTF8 코드페이지)에서
+    # 한글 섞인 출력(도구 설명·setup 경로·JSON-RPC 응답)이 UnicodeEncodeError로 죽는
+    # 걸 실제로 npm 패키지 로컬 설치 후 재현했다. --list-tools·setup만 골라 뒤에서
+    # 처리하면 그 경로들이 이 보호를 못 받는다.
+    try:
+        sys.stdin.reconfigure(encoding="utf-8")
+        sys.stdout.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
     if argv and argv[0] == "setup":     # Claude Code·Codex 설정에 등록만(토큰 없음)
         from .setup import run as setup_run
         setup_run()
@@ -708,11 +717,6 @@ def main(argv=None) -> int:
     if "--list-tools" in argv:          # 사람이 붙이기 전에 확인하는 용도
         print(json.dumps(tool_definitions(), ensure_ascii=False, indent=1))
         return 0
-    try:
-        sys.stdin.reconfigure(encoding="utf-8")
-        sys.stdout.reconfigure(encoding="utf-8")
-    except (AttributeError, ValueError):
-        pass
     return serve()
 
 
