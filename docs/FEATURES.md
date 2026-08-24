@@ -57,6 +57,7 @@ PageView를 전송하며, 과제·세션 URL과 원문·초안·답변은 측정
 | **Local Agent Runtime Phase 3**(ReportRuntime: 작업공간·명세·프롬프트 준비, 결정적 검증 5종, 1회 자동 수정) | `until/runtime/report_runtime.py` | test_runtime_phase2 |
 | **Local Agent Runtime Phase 4**(Submission Bridge: 파일명·확장자·MIME·개수 검사, content hash로 nonce 결합, 검증 후 변조 탐지, block 시 발급 0) | `until/runtime/submission_bridge.py` | test_runtime_phase2 |
 | **Local Agent Runtime 진입점**(`python -m until.runtime`: 수집→AI금지확인→명세·라우팅·정책→작업공간·계획→사람 승인→실행→검증→번들. 명세는 LLM 0으로 조립) | `until/runtime/cli.py`, `until/runtime/spec_builder.py` | test_runtime_cli |
+| **MCP 서버**(`python -m until.mcp_server`, stdio JSON-RPC. 읽기 전용 6도구 — inbox·assignment·materials·route·readiness·series. 생성 도구 없음·LLM 0·의존성 0·토큰 미저장) | `until/mcp_server.py` | test_mcp_server |
 | **런타임 eTL 입력**(`--fast`로 마감 임박 미제출 과제 자동 선택, 본문·첨부·관련 자료 수집, 통과 시 제출 페이지 링크. 선택 정책은 웹 딸깍과 동일) | `until/runtime/etl_input.py` | test_runtime_etl |
 | **런타임 제출본 마무리**(검증된 초안의 `[[DECISION]]`을 답변으로 치환하거나 `【직접 정할 것 N】` 자리표시로 — 원문 마커가 제출 파일에 남지 않는다. 치환 뒤 요건 재검사) | `until/runtime/finish.py`, `until/report.py:resolve_decision_markers` | test_runtime_cli |
 | **샌드박스 자체 검증**(`--verify-sandbox`: 네트워크·작업공간 밖 쓰기를 실제로 시도해 막히는지 확인, 네트워크는 대조군 대비. 증명 안 된 격리 신고를 잡아냄) | `until/runtime/sandbox_check.py` | test_runtime_cli |
@@ -178,7 +179,7 @@ JSON(CLI `--readiness-json`, 웹 `GET /readiness/<token>.json`).
 ## 개발 루틴
 
 ```bash
-PYTHONIOENCODING=utf-8 python run_tests.py      # 88스위트 병렬(~15s). -j 1 = 순차
+PYTHONIOENCODING=utf-8 python run_tests.py      # 89스위트 병렬(~15s). -j 1 = 순차
 python -m until.cli examples/sample_assignment.txt --backend mock   # 데모
 python -m until.web                              # 웹(mock)
 ```

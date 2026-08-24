@@ -32,7 +32,7 @@ def set_root_override(path: Path | None) -> None:
 
 def _algo_version() -> str:
     try:
-        return version("until-mvp")
+        return version("until-mcp")
     except PackageNotFoundError:
         return "1.10.0"
 

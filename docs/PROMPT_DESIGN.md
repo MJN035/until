@@ -22,7 +22,7 @@ LLM에 "사람의 판단을 대신하지 말라"고 지시해도, 모델은 종�
 - 차용한 것: `Validator.validate() → Pass/Fail`, `Guard().use(validator, on_fail=...)`, 그리고 검증 실패 시 LLM을 **재프롬프트(reask)** 하는 동작.
 - 우리 구현 대응:
 
-  | guardrails | until-mvp |
+  | guardrails | until |
   |---|---|
   | `Validator.validate()` | `BoundaryValidator.validate(draft) → ValidationResult` |
   | `OnFailAction.REASK / EXCEPTION / NOOP` | `OnFailAction.REASK / EXCEPTION / WARN` |

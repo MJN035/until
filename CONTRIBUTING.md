@@ -6,8 +6,8 @@ AI 에이전트입니다. 기여 전에 아래만 지켜 주세요.
 ## 빠른 시작
 
 ```bash
-git clone https://github.com/MJN035/until-mvp
-cd until-mvp
+git clone https://github.com/MJN035/until
+cd until
 python run_tests.py          # 13개 오프라인 스위트(키·인터넷 불필요, 전부 mock)
 ```
 

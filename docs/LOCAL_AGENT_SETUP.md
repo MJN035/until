@@ -137,7 +137,7 @@ export UNTIL_AGENT_SANDBOX_ISOLATES='filesystem,network'
 
 ```bash
 wsl                                   # Ubuntu 24.04
-cd /mnt/c/.../until-mvp
+cd /mnt/c/.../until
 install -m 755 tools/until-sandbox.sh ~/until-sandbox.sh
 
 export UNTIL_AGENT_SANDBOX="$HOME/until-sandbox.sh,{workspace}"

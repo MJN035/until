@@ -108,7 +108,7 @@ Gemini(무료 티어, OpenAI 호환 엔드포인트), OpenRouter(모델명 `:fre
 PowerShell에선 `export`가 안 먹는다(그건 Mac/Linux 문법). `$env:`를 써라:
 
 ```powershell
-cd <until-mvp 폴더 경로>
+cd <until 폴더 경로>
 $env:UNTIL_BASE_URL="https://api.groq.com/openai/v1"
 $env:UNTIL_API_KEY="gsk_..."        # Groq 무료 키
 $env:UNTIL_MODEL="llama-3.3-70b-versatile"

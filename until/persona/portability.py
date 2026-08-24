@@ -34,7 +34,7 @@ def _app_version() -> str:
     try:
         from importlib.metadata import PackageNotFoundError, version
         try:
-            return version("until-mvp")
+            return version("until-mcp")
         except PackageNotFoundError:
             return ""
     except Exception:

@@ -1,5 +1,5 @@
 [project]
-name = "until-mvp"
+name = "until-mcp"
 version = "1.10.0"
 description = "Until — AI agent that drafts everything up to the human-judgment boundary (Draft 경계선)."
 readme = "README.md"
@@ -15,8 +15,8 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/MJN035/until-mvp"
-Repository = "https://github.com/MJN035/until-mvp"
+Homepage = "https://github.com/MJN035/until"
+Repository = "https://github.com/MJN035/until"
 
 [project.optional-dependencies]
 local = ["openai>=1.40"]         # --backend local (Groq/Ollama 등 OpenAI 호환)
@@ -31,6 +31,7 @@ web = ["jinja2>=3.1", "fastapi>=0.115", "uvicorn>=0.30", "python-multipart>=0.0.
 
 [project.scripts]
 until = "until.cli:main"
+until-mcp = "until.mcp_server:main"
 
 [build-system]
 requires = ["setuptools>=68"]
