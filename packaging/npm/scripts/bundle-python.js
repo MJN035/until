@@ -53,6 +53,10 @@ function copyDir(src, dest, relDir) {
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
     const relPath = relDir ? `${relDir}/${entry.name}` : entry.name;
     if (entry.isDirectory()) {
+      // 점 디렉터리(.omc/.git/.pytest_cache/...)는 로컬 세션·캐시 상태다 —
+      // filesystem을 그대로 긁으므로 .gitignore가 걸러주지 않는다. 방금 실제로
+      // 이 세션의 .omc 상태 파일이 tarball에 실려 나갈 뻔한 걸 잡았다.
+      if (entry.name.startsWith('.')) continue;
       if (SKIP_DIRS.has(entry.name) || SKIP_RELDIRS.has(relPath)) continue;
       copyDir(path.join(src, entry.name), path.join(dest, entry.name), relPath);
       continue;
