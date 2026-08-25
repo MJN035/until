@@ -18,15 +18,48 @@ const DEST = path.join(DEST_ROOT, 'until');
 const SKIP_DIRS = new Set(['__pycache__']);
 const SKIP_EXT = new Set(['.pyc']);
 
-function copyDir(src, dest) {
+/*
+ * 9개 MCP 도구(읽기 전용, LLM 호출 0건)가 실제로 필요로 하지 않는 웹앱·결제·인증·
+ * 관리자·텔레메트리·평가 하니스 코드는 npm 패키지에 넣지 않는다. 이 파일들은
+ * 전부 web.py/asgi.py/cli.py 같은 '진입점'에서만 참조되고, mcp_server.py의 지연
+ * import 그래프(레포 루트에서 직접 재현해 확인함)에는 등장하지 않는다 — 각 항목의
+ * 모든 참조자를 grep으로 재귀 확인해서 이 목록 안에서 닫히는 것만 뺐다(예:
+ * readiness.py가 lazy import하는 presentation_export.py·runner/는 여기 없다 —
+ * 뺐으면 특정 과제 유형에서만 터지는 잠재 버그가 됐을 것).
+ * 최종 검증은 packaging/npm/python을 PYTHONPATH로 잡고 전체 테스트 스위트를
+ * 돌려서 한다(README 참고) — 이 목록만 보고 안전하다고 가정하지 않는다.
+ */
+const SKIP_FILES = new Set([
+  'web.py', 'asgi.py', 'billing.py', 'pg_webhook.py', 'adminboard.py',
+  'google_auth.py', 'kakao_auth.py', 'session_store.py', 'etltoken.py',
+  'cli.py', '__main__.py', 'web_templates.py', 'promptpack.py', 'report.py',
+  'profile.py', 'plan.py', 'feedback.py', 'diffview.py', 'demo_showcase.py',
+  'requirement_trace.py', 'cloudkv.py', 'analytics.py',
+  'personalization_board.py', 'betarequests.py', 'policy_profiles.py',
+  // pipeline.py: TASK-019 회귀 테스트가 until_route/until_readiness 호출 시
+  // until.pipeline이 모듈 그래프에 절대 안 딸려온다는 걸 이미 코드로 증명해 뒀다.
+  'pipeline.py',
+]);
+const SKIP_RELDIRS = new Set([
+  'telemetry', 'webassets', 'evals', 'optimize', 'persona',
+]);
+// 상대경로(POSIX 구분자)가 이 집합에 있으면 파일 하나만 제외한다(디렉터리 전체가 아님).
+const SKIP_RELFILES = new Set([
+  'runtime/cli.py', 'runtime/cli_agent.py', 'runtime/__main__.py',
+]);
+
+function copyDir(src, dest, relDir) {
   fs.mkdirSync(dest, { recursive: true });
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const relPath = relDir ? `${relDir}/${entry.name}` : entry.name;
     if (entry.isDirectory()) {
-      if (SKIP_DIRS.has(entry.name)) continue;
-      copyDir(path.join(src, entry.name), path.join(dest, entry.name));
+      if (SKIP_DIRS.has(entry.name) || SKIP_RELDIRS.has(relPath)) continue;
+      copyDir(path.join(src, entry.name), path.join(dest, entry.name), relPath);
       continue;
     }
     if (SKIP_EXT.has(path.extname(entry.name))) continue;
+    if (!relDir && SKIP_FILES.has(entry.name)) continue;
+    if (SKIP_RELFILES.has(relPath)) continue;
     fs.copyFileSync(path.join(src, entry.name), path.join(dest, entry.name));
   }
 }
@@ -37,7 +70,7 @@ function main() {
     process.exit(1);
   }
   fs.rmSync(DEST_ROOT, { recursive: true, force: true });
-  copyDir(SRC, DEST);
+  copyDir(SRC, DEST, '');
   let n = 0;
   const walk = (d) => {
     for (const e of fs.readdirSync(d, { withFileTypes: true })) {
