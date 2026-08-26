@@ -5,6 +5,8 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+build/
+dist/
 
 # Secrets — never commit (.env.example 은 추적 유지)
 .env

@@ -32,10 +32,11 @@ until setup            # 감지되는 클라이언트에 자동 등록(기존 �
 
 파이썬 소스가 패키지에 동봉돼 있다. **pip도 uv도 필요 없고 시스템 `python3`만 있으면 된다** — 런타임 의존성이 0개라서 가능하다.
 
-### 파이썬
+### 파이썬 (PyPI 미배포 — git 직접 설치)
 
 ```bash
-pip install until-mcp && until-mcp setup      # 또는: uvx until-mcp setup
+pip install git+https://github.com/MJN035/until
+until-mcp setup
 ```
 
 ### 직접 등록 (설정 파일에 붙여넣기)

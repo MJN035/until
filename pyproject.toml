@@ -1,7 +1,7 @@
 [project]
 name = "until-mcp"
 version = "1.10.0"
-description = "Until — AI agent that drafts everything up to the human-judgment boundary (Draft 경계선)."
+description = "MCP server for university LMS (eTL/Canvas/Moodle) — read-only, deterministic, zero LLM calls, zero runtime dependencies."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "AGPL-3.0-only" }
@@ -36,6 +36,9 @@ until-mcp = "until.mcp_server:main"
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["until*"]
 
 [tool.setuptools.package-data]
 until = ["templates/*.html", "webassets/*.css", "webassets/*.js", "webassets/*.html", "webassets/*.jpg"]
